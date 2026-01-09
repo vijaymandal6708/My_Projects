@@ -7,7 +7,17 @@ const stuRoute=require("./routes/StudentRoute");
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
-app.use(cors());
+const allowedOrigins = [
+  "https://my-projects-7b20.onrender.com",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use("/students",stuRoute);
 mongoose.connect("mongodb://127.0.0.1:27017/cybromnode").then(() => console.log("connected to db"));
 
