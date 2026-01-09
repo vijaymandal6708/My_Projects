@@ -17,23 +17,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: [
-    "https://my-projects-3yot.onrender.com"
+    "https://vijay-gadget-galaxy-backend.onrender.com"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
-
 app.use("/admin", AdminRoute);
 app.use("/user", userRoute);
 app.use("/product", ProductRoute);
 app.use("/api/payment",paymentRoute);
 app.use("/orders",orderRoute);
-
-
-
-
 
 app.listen(process.env.PORT, ()=>{
     console.log("server run on 8000 Port!")
