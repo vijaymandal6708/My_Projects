@@ -15,7 +15,15 @@ mongoose.connect(process.env.DBCONN).then(()=>{
 // Use body-parser middleware for JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://my-projects-3yot.onrender.com"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
 
 app.use("/admin", AdminRoute);
 app.use("/user", userRoute);
@@ -27,6 +35,6 @@ app.use("/orders",orderRoute);
 
 
 
-app.listen(8000, ()=>{
+app.listen(process.env.PORT, ()=>{
     console.log("server run on 8000 Port!")
 })
