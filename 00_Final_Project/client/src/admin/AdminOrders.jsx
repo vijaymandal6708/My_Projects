@@ -8,7 +8,7 @@ const AdminOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("admintoken");
 
         const res = await axios.get(
           "http://localhost:8000/admin/orders",

@@ -291,7 +291,7 @@ const Speakers = () => {
         </div>
 
         <div className="section-header">
-          <h2>Trending Smartphones</h2>
+          <h2>Trending Speakers</h2>
           <p>Top picks hand-selected for you</p>
         </div>
 

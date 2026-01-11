@@ -2,7 +2,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [adminEmail, setAdminEmail] = useState("");
@@ -247,6 +247,12 @@ const Login = () => {
   font-size: 16px;
   cursor: pointer;
   animation: pulse 2.5s infinite;
+  margin-bottom: 10px;
+}
+
+.end-text{
+  text-decoration: none;
+  font-size: 14px;
 }
       `}</style>
 
@@ -301,10 +307,12 @@ const Login = () => {
             >
               <option value="">Select user type</option>
               <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="admin">Seller</option>
             </select>
 
             <button type="submit">Login</button>
+
+            <Link className="end-text" to="/signup">Don't have an account? Signup</Link>
           </form>
         </div>
 
