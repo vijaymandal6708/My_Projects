@@ -4,3 +4,7 @@
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
+
+.flex-ankit::-webkit-scrollbar{
+  display: none;
+}
