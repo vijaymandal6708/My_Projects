@@ -4,6 +4,7 @@ import createTokenAndSaveCookie from "../jwt/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
+    console.log(req.body);
     const { name, email, password, confirmpassword } = req.body;
 
     if (password !== confirmpassword) {
@@ -65,7 +66,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req,res)=>{
     try {
-       res.clearCookie('token');
+       res.clearCookie('jwt');
        res.status(200).json({message:"User logged out successfully"}) 
     } catch (error) {
        console.log(error);
