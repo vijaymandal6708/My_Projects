@@ -47,6 +47,8 @@ const Signup = () => {
 
       setLoading(false);
 
+      alert("Signup Successful");
+
       // Success
       navigate("/login");
 
