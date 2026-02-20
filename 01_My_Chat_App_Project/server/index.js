@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import userRoute from "./routes/user.route.js";
+import messageRoute from "./routes/message.route.js";
 import cors from "cors";
 
 const app = express();
@@ -26,6 +27,7 @@ try {
 };
 
 app.use("/api/user", userRoute);
+app.use("/api/message", messageRoute);
 
 app.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}`);

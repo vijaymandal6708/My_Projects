@@ -1,8 +1,12 @@
-import React from 'react'
+import React from 'react';
+import useConversation from '../../stateManage/useConversation.js';
 
-const User = () => {
+const User = ({user}) => {
+   const {selectedConversation, setSelectedConversation} = useConversation();
+   const isSelected = selectedConversation?._id===user._id;
   return (
-    <div>
+    <>
+      <div className={`hover:bg-slate-600 duration-300 ${isSelected?"bg-slate-700":""}}`}
       <div className="flex space-x-4 px-8 py-7 hover:bg-slate-600 duration-300 cursor-pointer">
         <div className="avatar avatar-online">
           <div className="w-14 rounded-full">
@@ -11,11 +15,11 @@ const User = () => {
         </div>
 
         <div>
-          <h1 className='font-bold'>Ankit Pathak</h1>
-          <span>Ankit@gmail.com</span>
+          <h1 className='font-bold'>{user.fullname}</h1>
+          <span>{user.email}</span>
         </div>
-      </div>
-    </div>
+        </div>
+    </>
   )
 }
 

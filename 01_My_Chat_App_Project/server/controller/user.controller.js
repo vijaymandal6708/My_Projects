@@ -82,7 +82,7 @@ export const getUserInfo = async (req,res)=>{
   try {
     const loggedInUser = req.user._id;
     const fillteredUsers = await User.find({_id: {$ne:loggedInUser}}).select("-password");
-    res.status(201).json({fillteredUsers});
+    res.status(201).json(fillteredUsers);
 
   } catch (error) {
     console.log("error in getAllUsers controller:"+ error);
