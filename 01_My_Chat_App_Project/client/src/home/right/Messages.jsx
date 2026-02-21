@@ -1,17 +1,27 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Message from "./Message";
+import useGetMessage from "../../context/useGetMessage.js";
+import Loading from "../../components/Loading.jsx";
 
 const Messages = () => {
+    const { messages, loading } = useGetMessage();
+
+    console.log(messages);
+    const lastMessagesRef = useRef();
+    useEffect(()=>{
+      setTimeout(()=>{
+        if(lastMessagesRef){
+          lastMessagesRef.current.scrollIntoView({behavior: "smooth"})
+        }
+      },100);
+    },[messages]);
   return (
     <>
-      <div className='py-2 flex-ankit overflow-y-auto' style={{minHeight:"calc(88vh - 8vh)"}}>
-        <Message></Message>
-        <Message></Message>
-        <Message></Message>
-         <Message></Message>
-        <Message></Message>
-        <Message></Message>
-       
+      {loading?(<Loading></Loading>):(messages.length>0 && messages.map((message)=>{
+        return <Message key={message._id} message={message} />
+      }))}
+      <div className='' style={{minHeight:"calc(88vh - 8vh)"}}>
+        {!loading && messages.length === 0 && <div><p className="text-center mt-[28%]">Say! Hi</p></div>}
       </div>
     </>
   );
