@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSocketContext } from './SocketContext'
 import useConversation from '../stateManage/useConversation.js';
-import sound from "";
+import sound from "../assets/notification.mp3";
 
 const useGetSocketMessage = () => {
     const {socket} = useSocketContext();
@@ -9,7 +9,8 @@ const useGetSocketMessage = () => {
 
     useEffect(()=>{
         socket.on("newMessage", (newMessage)=>{
-            const notification = hnew Audio(sound);
+            const notification = new Audio(sound);
+            notification.play();
 
             setMessages(...messages,newMessage);
         });
