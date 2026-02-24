@@ -28,4 +28,4 @@ const userGetAllUsers = () => {
   return [allUsers, loading];
 }
 
-export default userGetAllUsers
+export default userGetAllUsers;

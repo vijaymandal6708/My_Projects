@@ -18,4 +18,4 @@ const useGetSocketMessage = () => {
     },[socket,messages,setMessages]);
 }
 
-export default useGetSocketMessage
+export default useGetSocketMessage;
