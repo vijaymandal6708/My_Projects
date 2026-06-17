@@ -39,7 +39,7 @@ function App() {
       <Routes>
         {/* ================= USER WEBSITE ================= */}
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<Login />} />
           <Route path="home" element={<Home />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
