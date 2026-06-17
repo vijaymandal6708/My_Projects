@@ -39,7 +39,6 @@ function App() {
       <Routes>
         {/* ================= USER WEBSITE ================= */}
         <Route path="/" element={<Layout />}>
-          <Route index element={<Login />} />
           <Route path="home" element={<Home />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
@@ -56,6 +55,7 @@ function App() {
 
         {/* ================= AUTH (NO HEADER / FOOTER) ================= */}
         <Route element={<Layout2 />}>
+          <Route index element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>
