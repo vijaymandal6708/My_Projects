@@ -19,7 +19,7 @@ import Laptops from "./pages/categories/Laptops";
 import Speakers from "./pages/categories/Speakers";
 import Cameras from "./pages/categories/Cameras";
 import SearchResults from "./pages/SearchResults";
-import Wishlist from "./Wishlist";
+import Wishlist from "./pages/Wishlist";
 
 /* ===== ADMIN PAGES ===== */
 import AdminDashboard from "./admin/AdminDashboard";

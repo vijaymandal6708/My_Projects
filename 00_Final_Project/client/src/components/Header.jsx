@@ -52,7 +52,7 @@ const Header = () => {
     debounceRef.current = setTimeout(async () => {
       try {
         const { data } = await axios.get(
-          `${import.meta.env.VITE_BACKENDURL}/product/search?q=${searchText}`
+          `${import.meta.env.VITE_BACKENDURL}/product/search?q=${searchText}`,
         );
         setSuggestions(data);
         setShowSuggestions(true);
@@ -280,15 +280,31 @@ const Header = () => {
               <p>.Gadget Galaxy</p>
             </div>
 
-            <Link to="/home" onClick={resetSearch}>Home</Link>
-            <Link to="/categories/smartphones" onClick={resetSearch}>Smartphones</Link>
-            <Link to="/categories/laptops" onClick={resetSearch}>Laptops</Link>
-            <Link to="/categories/speakers" onClick={resetSearch}>Speakers</Link>
-            <Link to="/categories/cameras" onClick={resetSearch}>Cameras</Link>
+            <Link to="/home" onClick={resetSearch}>
+              Home
+            </Link>
+            <Link to="/categories/smartphones" onClick={resetSearch}>
+              Smartphones
+            </Link>
+            <Link to="/categories/laptops" onClick={resetSearch}>
+              Laptops
+            </Link>
+            <Link to="/categories/speakers" onClick={resetSearch}>
+              Speakers
+            </Link>
+            <Link to="/categories/cameras" onClick={resetSearch}>
+              Cameras
+            </Link>
           </div>
 
           <div className="right-container">
-            <div className="wishlist-container">
+            <div
+              className="wishlist-container"
+              onClick={() => {
+                resetSearch();
+                navigate("/wishlist");
+              }}
+            >
               <span>{wishlistData.length}</span>
               <FaRegHeart />
             </div>
@@ -344,7 +360,9 @@ const Header = () => {
             )}
           </div>
 
-          <Link to="/login" onClick={resetSearch}>Login</Link>
+          <Link to="/login" onClick={resetSearch}>
+            ⏻Logout
+          </Link>
           <div className="profile"></div>
         </div>
       </div>

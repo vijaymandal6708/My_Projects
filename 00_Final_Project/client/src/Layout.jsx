@@ -9,7 +9,7 @@ const Layout = () => {
       <Header />
 
       {/* MAIN CONTENT OFFSET */}
-      <div style={{ marginTop: "135px" }}>
+      <div style={{ marginTop: "135px"}}>
         <Outlet />
       </div>
 

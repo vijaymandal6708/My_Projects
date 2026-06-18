@@ -5,7 +5,7 @@ import {
   addToCart,
   increaseQuantity,
   removeFromWishlist,
-} from "./cartSlice";
+} from "../cartSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -149,7 +149,7 @@ const Wishlist = () => {
 
         {wishlist.length === 0 ? (
           <div className="empty">
-            <h3>Your wishlist is empty</h3>
+            <h5>Your wishlist is empty</h5>
             <p>Save items you like and come back later</p>
           </div>
         ) : (
