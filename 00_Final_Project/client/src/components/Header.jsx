@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { IoSearchOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
-import { FiShoppingCart } from "react-icons/fi";
+import { FiShoppingCart, FiShoppingBag } from "react-icons/fi"; 
 import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -14,13 +14,14 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const cartData = useSelector((state) => state.mycart.cart);
-  const wishlistData = useSelector((state) => state.mycart.wishlist);
+  const cartData = useSelector((state) => state.mycart.cart || []);
+  const wishlistData = useSelector((state) => state.mycart.wishlist || []);
+  const ordersData = useSelector((state) => state.mycart.orders || []);
 
   const debounceRef = useRef(null);
   const hideTimeoutRef = useRef(null);
 
-  /* ===== RESET SEARCH (USED EVERYWHERE) ===== */
+  /* ===== RESET SEARCH ===== */
   const resetSearch = () => {
     setSearchText("");
     setSuggestions([]);
@@ -77,7 +78,7 @@ const Header = () => {
     navigate(`/search?q=${encodeURIComponent(name)}`);
   };
 
-  /* ===== PREVENT FLICKER ON SLOW MOUSE ===== */
+  /* ===== PREVENT FLICKER ===== */
   const handleMouseLeave = () => {
     hideTimeoutRef.current = setTimeout(() => {
       setShowSuggestions(false);
@@ -94,7 +95,7 @@ const Header = () => {
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; font-family: sans-serif; }
+        * { box-sizing: border-box; }
 
         a {
           text-decoration: none;
@@ -108,12 +109,20 @@ const Header = () => {
           width: 100%;
           z-index: 2000;
           background: white;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .top-header-container {
+        .top-header-row {
+          width: 100%;
+          border-bottom: 1px solid #eee;
+        }
+
+        .top-header-content {
+          max-width: 1200px; 
+          margin: 0 auto;
           height: 65px;
           display: flex;
-          padding: 12px 225px;
+          padding: 0 20px;
           align-items: center;
           justify-content: space-between;
         }
@@ -134,11 +143,17 @@ const Header = () => {
           height: 40px;
           width: 190px;
           display: flex;
+          align-items: center;
+          margin-left: -20px;
+          cursor: pointer;
+        }
+
+        .logo p {
           font-weight: 900;
           font-size: 20px;
-          padding-top: 5px;
-          margin-left: -10px;
-          cursor: pointer;
+          margin: 0;
+          color: black;
+          font-style: normal;
         }
 
         .circle {
@@ -147,33 +162,46 @@ const Header = () => {
           background: #0987f5cf;
           border-radius: 50%;
           position: relative;
-          top: -3px;
+          top: -1px;
           left: 10px;
           opacity: 0.4;
         }
 
         .right-container {
           display: flex;
-          width: 90px;
+          align-items: center;
+          gap: 15px;
+          justify-content: flex-end;
         }
 
+        .orders-container,
         .wishlist-container,
         .cart-container {
-          width: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
           cursor: pointer;
           font-size: 20px;
+          width: 35px;
+          height: 35px;
+          color: black;
+          transition: color 0.2s;
         }
 
+        .orders-container:hover,
+        .wishlist-container:hover,
+        .cart-container:hover {
+          color: #4b0082;
+        }
+
+        .orders-container span,
         .wishlist-container span,
         .cart-container span {
           position: absolute;
-          top: -4px;
-          right: -2px;
-          font-size: 7px;
+          top: -2px;
+          right: -4px;
+          font-size: 8px;
           background: red;
           color: white;
           border-radius: 50%;
@@ -181,31 +209,45 @@ const Header = () => {
           font-weight: 700;
         }
 
-        .bottom-header-container {
-          position: relative;
+        .bottom-header-row {
+          width: 100%;
+          background: #0c0243;
+        }
+
+        .bottom-header-content {
+          max-width: 1200px;
+          margin: 0 auto;
           height: 69px;
           display: flex;
-          padding: 17px 220px;
-          background: #0c0243;
-          gap: 25px;
+          padding: 0 20px;
+          align-items: center;
+          justify-content: space-between;
           overflow: visible;
         }
 
-        .bottom-header-container a {
+        .bottom-header-links {
+          display: flex;
+          align-items: center;
+          gap: 25px;
+        }
+
+        .bottom-header-content a {
           color: white;
           font-weight: 600;
+          cursor: pointer;
+          font-size: 16px;
         }
 
         /* ===== SEARCH BAR ===== */
         .search-bar {
           height: 35px;
-          width: 700px;
+          width: 100%;
+          max-width: 600px;
           border-radius: 5px;
           background: white;
           display: flex;
           align-items: center;
           font-size: 14px;
-          margin-right: 430px;
           position: relative;
         }
 
@@ -230,6 +272,8 @@ const Header = () => {
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          border-top-right-radius: 5px;
+          border-bottom-right-radius: 5px;
         }
 
         /* ===== SUGGESTIONS ===== */
@@ -252,6 +296,7 @@ const Header = () => {
           font-size: 14px;
           border-bottom: 1px solid #eee;
           text-transform: lowercase;
+          color: #333;
         }
 
         .suggestion-item:hover {
@@ -267,103 +312,119 @@ const Header = () => {
       `}</style>
 
       <div className="header-container">
-        <div className="top-header-container">
-          <div className="left-container">
-            <div
-              className="logo"
-              onClick={() => {
-                resetSearch();
-                navigate("/home");
-              }}
-            >
-              <div className="circle"></div>
-              <p>.Gadget Galaxy</p>
+        {/* TOP HEADER SECTION */}
+        <div className="top-header-row">
+          <div className="top-header-content">
+            <div className="left-container">
+              <div
+                className="logo"
+                onClick={() => {
+                  resetSearch();
+                  navigate("/home");
+                }}
+              >
+                <div className="circle"></div>
+                <p>.Gadget Galaxy</p>
+              </div>
+
+              <Link to="/home" onClick={resetSearch}>Home</Link>
+              <Link to="/categories/smartphones" onClick={resetSearch}>Smartphones</Link>
+              <Link to="/categories/laptops" onClick={resetSearch}>Laptops</Link>
+              <Link to="/categories/speakers" onClick={resetSearch}>Speakers</Link>
+              <Link to="/categories/cameras" onClick={resetSearch}>Cameras</Link>
             </div>
 
-            <Link to="/home" onClick={resetSearch}>
-              Home
-            </Link>
-            <Link to="/categories/smartphones" onClick={resetSearch}>
-              Smartphones
-            </Link>
-            <Link to="/categories/laptops" onClick={resetSearch}>
-              Laptops
-            </Link>
-            <Link to="/categories/speakers" onClick={resetSearch}>
-              Speakers
-            </Link>
-            <Link to="/categories/cameras" onClick={resetSearch}>
-              Cameras
-            </Link>
-          </div>
+            <div className="right-container">
+              {/* 1. Wishlist Icon */}
+              <div
+                className="wishlist-container"
+                title="Wishlist"
+                onClick={() => {
+                  resetSearch();
+                  navigate("/wishlist");
+                }}
+              >
+                <span>{wishlistData.length}</span>
+                <FaRegHeart />
+              </div>
 
-          <div className="right-container">
-            <div
-              className="wishlist-container"
-              onClick={() => {
-                resetSearch();
-                navigate("/wishlist");
-              }}
-            >
-              <span>{wishlistData.length}</span>
-              <FaRegHeart />
-            </div>
+              {/* 2. Cart Icon */}
+              <div
+                className="cart-container"
+                title="Cart"
+                onClick={() => {
+                  resetSearch();
+                  navigate("/cart");
+                }}
+              >
+                <span>{cartData.length}</span>
+                <FiShoppingCart />
+              </div>
 
-            <div
-              className="cart-container"
-              onClick={() => {
-                resetSearch();
-                navigate("/cart");
-              }}
-            >
-              <span>{cartData.length}</span>
-              <FiShoppingCart />
+              {/* 3. My Orders Icon */}
+              <div 
+                className="orders-container" 
+                title="My Orders"
+                onClick={() => {
+                  resetSearch();
+                  // 🔑 Fixed: Routes must match layout. Changing route path target to /orders
+                  navigate("/orders"); 
+                }}
+              >
+                <span>{ordersData.length}</span>
+                <FiShoppingBag style={{ fontSize: "22px" }} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bottom-header-container">
-          <div
-            className="search-bar"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="search-icon">
-              <IoSearchOutline />
-            </div>
-
-            <input
-              value={searchText}
-              placeholder="Search products"
-              onChange={(e) => setSearchText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-
-            <div className="search-button" onClick={handleSearch}>
-              Search
-            </div>
-
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="suggestions">
-                {suggestions.map((item) => (
-                  <div
-                    key={item._id}
-                    className="suggestion-item"
-                    onMouseDown={() =>
-                      handleSuggestionClick(item.name.toLowerCase())
-                    }
-                  >
-                    {item.name.toLowerCase()}
-                  </div>
-                ))}
+        {/* BOTTOM HEADER SECTION */}
+        <div className="bottom-header-row">
+          <div className="bottom-header-content">
+            <div
+              className="search-bar"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div className="search-icon">
+                <IoSearchOutline />
               </div>
-            )}
-          </div>
 
-          <Link to="/login" onClick={resetSearch}>
-            ⏻Logout
-          </Link>
-          <div className="profile"></div>
+              <input
+                value={searchText}
+                placeholder="Search products"
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+
+              <div className="search-button" onClick={handleSearch}>
+                Search
+              </div>
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="suggestions">
+                  {suggestions.map((item) => (
+                    <div
+                      key={item._id}
+                      className="suggestion-item"
+                      onMouseDown={() =>
+                        handleSuggestionClick(item.name.toLowerCase())
+                      }
+                    >
+                      {item.name.toLowerCase()}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bottom-header-links">
+              <Link to="/login" onClick={resetSearch}>
+                ⏻Logout
+              </Link>
+              <div className="profile"></div>
+            </div>
+          </div>
         </div>
       </div>
     </>

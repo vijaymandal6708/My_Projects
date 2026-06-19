@@ -9,6 +9,7 @@ const cartSlice = createSlice({
     cart: savedCart,
     wishlist: savedWishlist,
   },
+
   reducers: {
     addToCart: (state, action) => {
       const item = action.payload;
@@ -38,6 +39,7 @@ const cartSlice = createSlice({
       const item = state.cart.find(
         (cartItem) => cartItem.id === action.payload.id
       );
+
       if (item) item.qnty += 1;
 
       localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -47,6 +49,7 @@ const cartSlice = createSlice({
       const item = state.cart.find(
         (cartItem) => cartItem.id === action.payload.id
       );
+
       if (item && item.qnty > 1) item.qnty -= 1;
 
       localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -62,14 +65,17 @@ const cartSlice = createSlice({
 
     clearCart: (state) => {
       state.cart = [];
+      localStorage.removeItem("cart");
     },
 
     addToWishlist: (state, action) => {
       const exists = state.wishlist.find(
         (item) => item.id === action.payload.id
       );
+
       if (!exists) {
         state.wishlist.push(action.payload);
+
         localStorage.setItem(
           "wishlist",
           JSON.stringify(state.wishlist)
@@ -79,7 +85,7 @@ const cartSlice = createSlice({
 
     removeFromWishlist: (state, action) => {
       state.wishlist = state.wishlist.filter(
-        (item) => item.id !== action.payload.id
+        (item) => item.id !== action.payload
       );
 
       localStorage.setItem(

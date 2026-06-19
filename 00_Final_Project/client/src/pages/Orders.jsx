@@ -202,10 +202,11 @@ const Orders = () => {
           font-weight: 700;
         }
 
-        .empty {
+        /* ===== EMPTY CONTAINER MATCHING CART EXACTLY ===== */
+        .empty-orders {
           text-align: center;
-          margin-top: 90px;
-          font-size: 17px;
+          margin-top: 80px;
+          font-size: 18px;
           color: #555;
         }
 
@@ -221,9 +222,13 @@ const Orders = () => {
         <h2 className="orders-title">My Orders</h2>
 
         {loading ? (
-          <p className="empty">Loading orders...</p>
+          /* Using stylized loading block that matches look-and-feel specs */
+          <p className="empty-orders" style={{background:"#0c0243", height:"300px", color:"white", padding:"115px", borderRadius:"25px"}}>Loading orders...</p>
         ) : orders.length === 0 ? (
-          <p className="empty">You have no orders yet 📦</p>
+          /* 🔑 Mirrored Exactly from Cart Component Layout styles */
+          <p className="empty-orders" style={{background:"#0c0243", height:"300px", color:"white", padding:"115px", borderRadius:"25px"}}>
+            Your order history is empty<span style={{fontSize:"30px"}}>🛍️</span>
+          </p>
         ) : (
           orders.map((order) => (
             <div className="order-card" key={order._id}>

@@ -17,7 +17,8 @@ const Wishlist = () => {
   const cart = useSelector((state) => state.mycart.cart);
 
   const moveToCart = (item) => {
-    const existingItem = cart.find((c) => c.id === item.id);
+    const itemId = item.id || item._id; 
+    const existingItem = cart.find((c) => c.id === itemId);
 
     if (existingItem) {
       dispatch(increaseQuantity(existingItem));
@@ -25,7 +26,7 @@ const Wishlist = () => {
     } else {
       dispatch(
         addToCart({
-          id: item.id,
+          id: itemId,
           name: item.name,
           price: item.price,
           image: item.image,
@@ -35,7 +36,7 @@ const Wishlist = () => {
       toast.success("Moved to cart 🛒");
     }
 
-    dispatch(removeFromWishlist(item.id));
+    dispatch(removeFromWishlist(itemId));
   };
 
   return (
@@ -43,129 +44,180 @@ const Wishlist = () => {
       <ToastContainer position="top-right" autoClose={1500} />
 
       <style>{`
+        * {
+          box-sizing: border-box;
+          font-family: "Inter", system-ui, sans-serif;
+        }
+
+        html {
+          scrollbar-gutter: stable;
+        }
+
         body {
           background: #f4f6f8;
         }
 
         .wishlist-page {
-          max-width: 1200px;
+          min-height: 72vh;
+          max-width: 1000px;
           margin: auto;
           padding: 40px 20px 80px;
         }
 
         .wishlist-title {
-          font-size: 28px;
+          font-size: 26px;
           font-weight: 700;
-          margin-bottom: 30px;
           text-align: center;
+          margin-bottom: 80px;
         }
 
-        .wishlist-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 28px;
+        .empty-wishlist {
+          text-align: center;
+          background: #0c0243;
+          height: 300px;
+          color: white;
+          padding: 115px;
+          border-radius: 25px;
+          font-size: 18px;
         }
 
-        .wishlist-card {
+        /* ===== BALANCED ITEM CARD (MATCHES CART GEOMETRY) ===== */
+        .wishlist-item {
           background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-          overflow: hidden;
-          transition: transform 0.25s ease;
-        }
-
-        .wishlist-card:hover {
-          transform: translateY(-6px);
-        }
-
-        .wishlist-image {
-          height: 220px;
-          background: #f1f3f6;
+          border-radius: 16px;
+          padding: 32px 40px;
           display: flex;
           align-items: center;
-          justify-content: center;
-          padding: 16px;
+          gap: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
 
-        .wishlist-image img {
-          max-width: 100%;
-          max-height: 100%;
+        .wishlist-item img {
+          width: 90px;
+          height: 90px;
           object-fit: contain;
           cursor: pointer;
         }
 
         .wishlist-info {
-          padding: 16px 22px 22px;
+          flex: 1.5; /* Slightly larger share to hold text comfortably */
         }
 
         .wishlist-info h4 {
           font-size: 16px;
           font-weight: 600;
-          margin-bottom: 8px;
-          height: 42px;
+          margin-bottom: 6px;
         }
 
-        .wishlist-price {
-          font-size: 17px;
-          font-weight: 700;
-          color: #4b0082;
-          margin-bottom: 16px;
+        .wishlist-info p {
+          font-size: 13px;
+          color: #777;
+          margin-bottom: 6px;
         }
 
+        .wishlist-info .price {
+          font-weight: 600;
+          font-size: 15px;
+        }
+
+        /* ===== THE BALANCE SPACER ===== 
+           Matches the space occupied by quantity toggles in Cart */
+        .wishlist-spacer {
+          flex: 1; 
+          display: flex;
+          justify-content: center;
+        }
+
+        /* ===== ACTIONS REBALANCED ===== */
         .wishlist-actions {
           display: flex;
-          gap: 10px;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 25px;
+          min-width: 180px; /* Forces buttons to sit exactly like total/delete columns */
         }
 
         .btn-cart {
-          flex: 1;
-          background: linear-gradient(135deg, #020718, #131a3b);
-          color: white;
+          height: 45px;
+          padding: 0 24px;
+          border-radius: 12px;
           border: none;
-          padding: 10px;
-          border-radius: 14px;
+          background: #0c0243;
+          color: white;
           font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
+          transition: background 0.2s;
+          white-space: nowrap;
+        }
+
+        .btn-cart:hover {
+          background: #1b0f6f;
         }
 
         .btn-remove {
-          background: #f1f1f1;
+          background: transparent;
           border: none;
-          padding: 10px 14px;
-          border-radius: 14px;
+          color: #c00;
+          font-size: 18px;
           cursor: pointer;
-          font-size: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .empty {
-          text-align: center;
-          color: #666;
-          margin-top: 80px;
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+          .wishlist-spacer {
+            display: none; /* Hide placeholder on tablets/mobile */
+          }
+        }
+
+        @media (max-width: 600px) {
+          .wishlist-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 24px;
+          }
+
+          .wishlist-actions {
+            width: 100%;
+            justify-content: space-between;
+            margin-top: 10px;
+            min-width: 0;
+          }
         }
       `}</style>
 
+      {/* ===== JSX ===== */}
       <div className="wishlist-page">
-        <h2 className="wishlist-title">My Wishlist ❤️</h2>
+        <h2 className="wishlist-title">My Wishlist</h2>
 
         {wishlist.length === 0 ? (
-          <div className="empty">
-            <h5>Your wishlist is empty</h5>
-            <p>Save items you like and come back later</p>
-          </div>
+          <p className="empty-wishlist">
+            Your wishlist is empty <span style={{ fontSize: "30px" }}>❤️</span>
+          </p>
         ) : (
-          <div className="wishlist-grid">
-            {wishlist.map((item) => (
-              <div key={item.id} className="wishlist-card">
-                <div
-                  className="wishlist-image"
-                  onClick={() => navigate(`/product/${item.id}`)}
-                >
-                  <img src={item.image} alt={item.name} />
-                </div>
+          <>
+            {wishlist.map((item) => {
+              const itemId = item.id || item._id;
+              return (
+                <div className="wishlist-item" key={itemId}>
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    onClick={() => navigate(`/product/${itemId}`)}
+                  />
 
-                <div className="wishlist-info">
-                  <h4>{item.name}</h4>
-                  <div className="wishlist-price">₹{item.price}</div>
+                  <div className="wishlist-info">
+                    <h4>{item.name}</h4>
+                    <p>{item.description || "No description available"}</p>
+                    <p className="price">₹{item.price}</p>
+                  </div>
+
+                  {/* ⚖️ This structural placeholder fills the visual column gap of the cart's quantity tools */}
+                  <div className="wishlist-spacer"></div>
 
                   <div className="wishlist-actions">
                     <button
@@ -178,7 +230,7 @@ const Wishlist = () => {
                     <button
                       className="btn-remove"
                       onClick={() => {
-                        dispatch(removeFromWishlist(item.id));
+                        dispatch(removeFromWishlist(itemId));
                         toast.info("Removed from wishlist");
                       }}
                     >
@@ -186,9 +238,9 @@ const Wishlist = () => {
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              );
+            })}
+          </>
         )}
       </div>
     </>

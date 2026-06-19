@@ -38,14 +38,14 @@ const Cart = () => {
         }
 
         .cart-page {
-          min-height: 100vh;
+          min-height: 72vh;
           max-width: 1000px;
           margin: auto;
           padding: 40px 20px 80px;
         }
 
         .cart-title {
-          font-size: 28px;
+          font-size: 26px;
           font-weight: 700;
           text-align: center;
           margin-bottom: 30px;
@@ -53,7 +53,7 @@ const Cart = () => {
 
         .empty-cart {
           text-align: center;
-          margin-top: 120px;
+          margin-top: 80px;
           font-size: 18px;
           color: #555;
         }
@@ -204,7 +204,7 @@ const Cart = () => {
         <h2 className="cart-title">My Cart</h2>
 
         {cart.length === 0 ? (
-          <p className="empty-cart">Your cart is empty 🛒</p>
+          <p className="empty-cart" style={{background:"#0c0243",height:"300px",color:"white", padding:"115px",borderRadius:"25px"}}>Your cart is empty<span style={{fontSize:"30px"}}>🛒</span></p>
         ) : (
           <>
             {cart.map((item) => (

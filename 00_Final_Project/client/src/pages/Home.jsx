@@ -3,12 +3,8 @@ import Slider from "../components/Slider";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addToCart,
-  addToWishlist,
-  increaseQuantity,
-} from "../cartSlice";
-import { FaRegHeart } from "react-icons/fa6";
+import { addToCart, addToWishlist, removeFromWishlist, increaseQuantity } from "../cartSlice"; // Added removeFromWishlist if you want to toggle it off
+import { FaRegHeart, FaHeart } from "react-icons/fa6"; // 👇 Imported filled heart icon
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -16,11 +12,14 @@ const Home = () => {
   const [mydata, setMydata] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
   const cart = useSelector((state) => state.mycart.cart);
+  // 👇 1. Select the wishlist state from your Redux store (Adjust 'mywishlist.wishlist' based on your actual slice name)
+  const wishlist = useSelector((state) => state.mycart.wishlist || []); 
 
   const loadData = async () => {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_BACKENDURL}/product/product-display`
+      `${import.meta.env.VITE_BACKENDURL}/product/product-display`,
     );
     setMydata(data);
   };
@@ -132,6 +131,7 @@ const Home = () => {
           align-items: center;
           gap: 12px;
           margin-bottom: 18px;
+          padding-right: 10px;
         }
 
         .mrp {
@@ -180,21 +180,16 @@ const Home = () => {
           font-weight: bold;
           color: #222;
           margin-bottom: 4px;
-          /* subtle tilt (less than italic) */
           transform: skewX(-6deg);
-
-          /* 👇 stronger, visible shadow */
-           text-shadow:
+          text-shadow:
           1px 1px 0 rgba(0,0,0,0.25),
           2px 3px 6px rgba(0,0,0,0.35);
-
           letter-spacing: 0.6px;
         }
 
         .section-header p {
           font-size: 14px;
           color: #666;
-          /* subtle tilt (less than italic) */
           transform: skewX(-6deg);
         }
 
@@ -230,7 +225,12 @@ const Home = () => {
         <div className="products-container">
           {mydata.map((item) => {
             const existingItem = cart.find(
-              (cartItem) => cartItem.id === item._id
+              (cartItem) => cartItem.id === item._id,
+            );
+
+            // 👇 2. Check if this product is already in the wishlist
+            const isInWishlist = wishlist.some(
+              (wishItem) => wishItem.id === item._id
             );
 
             return (
@@ -257,20 +257,49 @@ const Home = () => {
                     <span className="mrp">₹{item.MRP}</span>
                     <span className="offer">30% off</span>
 
-                    <FaRegHeart
-                      style={{
-                        fontSize: "20px",
-                        marginLeft: "30px",
-                        cursor: "pointer",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        dispatch(addToWishlist({ ...item, qnty: 1 }));
-                        toast.info("Added to wishlist ❤️", {
-                          autoClose: 1200,
-                        });
-                      }}
-                    />
+                    {/* 👇 3. Swap icons and apply color dynamically based on isInWishlist */}
+                    {isInWishlist ? (
+                      <FaHeart
+                        style={{
+                          fontSize: "20px",
+                          marginLeft: "auto",
+                          cursor: "pointer",
+                          color: "#ff3e6c", // Smooth red color
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Optional: If clicked again, remove it, or just show a message.
+                          toast.info("Item already added to wishlist!", {
+                            autoClose: 1200,
+                          });
+                        }}
+                      />
+                    ) : (
+                      <FaRegHeart
+                        style={{
+                          fontSize: "20px",
+                          marginLeft: "auto",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(
+                            addToWishlist({
+                              id: item._id,
+                              name: item.name,
+                              price: item.price,
+                              image: item.defaultImage,
+                              description: item.description,
+                              category: item.category,
+                              qnty: 1,
+                            }),
+                          );
+                          toast.info("Added to wishlist ❤️", {
+                            autoClose: 1200,
+                          });
+                        }}
+                      />
+                    )}
                   </div>
 
                   <button
@@ -280,7 +309,7 @@ const Home = () => {
 
                       if (existingItem) {
                         dispatch(increaseQuantity(existingItem));
-                        toast.info("Quantity increased", {
+                        toast.info("Item quantity increased", {
                           autoClose: 1200,
                         });
                       } else {
@@ -293,7 +322,7 @@ const Home = () => {
                             price: item.price,
                             image: item.defaultImage,
                             qnty: 1,
-                          })
+                          }),
                         );
 
                         toast.success("Item added to cart", {
