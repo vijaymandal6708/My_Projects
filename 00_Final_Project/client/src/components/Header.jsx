@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoCheckmarkCircleSharp, IoNotificationsOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
-import { FiShoppingCart, FiShoppingBag } from "react-icons/fi"; 
+import { FiShoppingCart, FiShoppingBag, FiPlusCircle, FiExternalLink } from "react-icons/fi"; 
 import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -10,16 +10,29 @@ const Header = () => {
   const [searchText, setSearchText] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  /* ===== ROLE CHECK STATE ===== */
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminAlerts] = useState(3); // Real-time metric notifications fallback
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const cartData = useSelector((state) => state.mycart.cart || []);
   const wishlistData = useSelector((state) => state.mycart.wishlist || []);
-  const ordersData = useSelector((state) => state.mycart.orders || []);
 
   const debounceRef = useRef(null);
   const hideTimeoutRef = useRef(null);
+
+  /* ===== VERIFY AUTH STATUS & ROLE ON MOUNT / NAVIGATION ===== */
+  useEffect(() => {
+    const adminToken = localStorage.getItem("admintoken");
+    if (adminToken) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [location.pathname]);
 
   /* ===== RESET SEARCH ===== */
   const resetSearch = () => {
@@ -28,21 +41,21 @@ const Header = () => {
     setShowSuggestions(false);
   };
 
-  /* ===== KEEP SEARCH TEXT ONLY ON SEARCH PAGE ===== */
+  /* ===== KEEP SEARCH TEXT ONLY ON LIVE SEARCH PAGES ===== */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const q = params.get("q");
 
-    if (location.pathname === "/search" && q) {
+    if ((location.pathname === "/search" || location.pathname.includes("search")) && q) {
       setSearchText(q);
     } else {
       resetSearch();
     }
   }, [location.pathname, location.search]);
 
-  /* ===== AUTO SUGGEST ===== */
+  /* ===== AUTO SUGGEST (Disabled while on Admin paths) ===== */
   useEffect(() => {
-    if (!searchText.trim()) {
+    if (!searchText.trim() || isAdmin) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -63,22 +76,30 @@ const Header = () => {
     }, 300);
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchText]);
+  }, [searchText, isAdmin]);
 
-  /* ===== SEARCH ACTION ===== */
+  /* ===== DYNAMIC ROUTING VIA GLOBAL INPUT FIELD ===== */
   const handleSearch = () => {
     if (!searchText.trim()) return;
     setShowSuggestions(false);
-    navigate(`/search?q=${encodeURIComponent(searchText)}`);
+
+    if (isAdmin) {
+      // Internal system filtering rules
+      if (searchText.toLowerCase().startsWith("order")) {
+        navigate(`/admin-dashboard/orders?q=${encodeURIComponent(searchText)}`);
+      } else {
+        navigate(`/admin-dashboard/products?q=${encodeURIComponent(searchText)}`);
+      }
+    } else {
+      navigate(`/search?q=${encodeURIComponent(searchText)}`);
+    }
   };
 
-  /* ===== SUGGESTION CLICK ===== */
   const handleSuggestionClick = (name) => {
     setShowSuggestions(false);
     navigate(`/search?q=${encodeURIComponent(name)}`);
   };
 
-  /* ===== PREVENT FLICKER ===== */
   const handleMouseLeave = () => {
     hideTimeoutRef.current = setTimeout(() => {
       setShowSuggestions(false);
@@ -87,9 +108,18 @@ const Header = () => {
 
   const handleMouseEnter = () => {
     clearTimeout(hideTimeoutRef.current);
-    if (searchText && suggestions.length > 0) {
+    if (searchText && suggestions.length > 0 && !isAdmin) {
       setShowSuggestions(true);
     }
+  };
+
+  const handleLogout = () => {
+    resetSearch();
+    if (isAdmin) {
+      localStorage.removeItem("admintoken");
+      setIsAdmin(false);
+    }
+    navigate("/login");
   };
 
   return (
@@ -159,12 +189,23 @@ const Header = () => {
         .circle {
           height: 17px;
           width: 17px;
-          background: #0987f5cf;
+          background: ${isAdmin ? "#7c3aed" : "#0987f5cf"}; /* Purple tone if Admin */
           border-radius: 50%;
           position: relative;
           top: -1px;
           left: 10px;
           opacity: 0.4;
+        }
+
+        .badge-pill {
+          background: #7c3aed;
+          color: white;
+          font-size: 11px;
+          font-weight: bold;
+          font-style: normal;
+          padding: 3px 8px;
+          border-radius: 12px;
+          margin-left: -10px;
         }
 
         .right-container {
@@ -176,7 +217,8 @@ const Header = () => {
 
         .orders-container,
         .wishlist-container,
-        .cart-container {
+        .cart-container,
+        .admin-action-icon {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -191,13 +233,14 @@ const Header = () => {
 
         .orders-container:hover,
         .wishlist-container:hover,
-        .cart-container:hover {
+        .cart-container:hover,
+        .admin-action-icon:hover {
           color: #4b0082;
         }
 
-        .orders-container span,
         .wishlist-container span,
-        .cart-container span {
+        .cart-container span,
+        .admin-action-icon .count-badge {
           position: absolute;
           top: -2px;
           right: -4px;
@@ -209,9 +252,23 @@ const Header = () => {
           font-weight: 700;
         }
 
+        .orders-success-badge {
+          position: absolute;
+          top: -1px;
+          right: -2px;
+          color: #2ecc71;
+          background: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        }
+
         .bottom-header-row {
           width: 100%;
-          background: #0c0243;
+          background: ${isAdmin ? "#0f172a" : "#0c0243"}; /* Swaps to Slate Dark for Admin Layout */
+          transition: background 0.3s;
         }
 
         .bottom-header-content {
@@ -266,7 +323,7 @@ const Header = () => {
         .search-button {
           height: 35px;
           width: 80px;
-          background-color: red;
+          background-color: ${isAdmin ? "#7c3aed" : "red"};
           color: white;
           display: flex;
           align-items: center;
@@ -305,14 +362,20 @@ const Header = () => {
 
         .profile {
           width: 35px;
-          background: white;
+          background: #e2e8f0;
           aspect-ratio: 1 / 1;
           border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: bold;
+          color: #334155;
         }
       `}</style>
 
       <div className="header-container">
-        {/* TOP HEADER SECTION */}
+        {/* TOP ROW */}
         <div className="top-header-row">
           <div className="top-header-content">
             <div className="left-container">
@@ -320,65 +383,63 @@ const Header = () => {
                 className="logo"
                 onClick={() => {
                   resetSearch();
-                  navigate("/home");
+                  navigate(isAdmin ? "/admin-dashboard" : "/home");
                 }}
               >
                 <div className="circle"></div>
                 <p>.Gadget Galaxy</p>
               </div>
-
-              <Link to="/home" onClick={resetSearch}>Home</Link>
-              <Link to="/categories/smartphones" onClick={resetSearch}>Smartphones</Link>
-              <Link to="/categories/laptops" onClick={resetSearch}>Laptops</Link>
-              <Link to="/categories/speakers" onClick={resetSearch}>Speakers</Link>
-              <Link to="/categories/cameras" onClick={resetSearch}>Cameras</Link>
+              
+              {!isAdmin ? (
+                <>
+                  <Link to="/home" onClick={resetSearch}>Home</Link>
+                  <Link to="/categories/smartphones" onClick={resetSearch}>Smartphones</Link>
+                  <Link to="/categories/laptops" onClick={resetSearch}>Laptops</Link>
+                  <Link to="/categories/speakers" onClick={resetSearch}>Speakers</Link>
+                  <Link to="/categories/cameras" onClick={resetSearch}>Cameras</Link>
+                </>
+              ) : (
+                <>
+                </>
+              )}
             </div>
 
             <div className="right-container">
-              {/* 1. Wishlist Icon */}
-              <div
-                className="wishlist-container"
-                title="Wishlist"
-                onClick={() => {
-                  resetSearch();
-                  navigate("/wishlist");
-                }}
-              >
-                <span>{wishlistData.length}</span>
-                <FaRegHeart />
-              </div>
+              {!isAdmin ? (
+                <>
+                  {/* Customer Options */}
+                  <div className="wishlist-container" title="Wishlist" onClick={() => { resetSearch(); navigate("/wishlist"); }}>
+                    <span>{wishlistData.length}</span>
+                    <FaRegHeart />
+                  </div>
 
-              {/* 2. Cart Icon */}
-              <div
-                className="cart-container"
-                title="Cart"
-                onClick={() => {
-                  resetSearch();
-                  navigate("/cart");
-                }}
-              >
-                <span>{cartData.length}</span>
-                <FiShoppingCart />
-              </div>
+                  <div className="cart-container" title="Cart" onClick={() => { resetSearch(); navigate("/cart"); }}>
+                    <span>{cartData.length}</span>
+                    <FiShoppingCart />
+                  </div>
 
-              {/* 3. My Orders Icon */}
-              <div 
-                className="orders-container" 
-                title="My Orders"
-                onClick={() => {
-                  resetSearch();
-                  // 🔑 Fixed: Routes must match layout. Changing route path target to /orders
-                  navigate("/orders"); 
-                }}
-              >
-                <span>{ordersData.length}</span>
-                <FiShoppingBag style={{ fontSize: "22px" }} />
-              </div>
+                  <div className="orders-container" title="My Orders" onClick={() => { resetSearch(); navigate("/orders"); }}>
+                    <span className="orders-success-badge">
+                      <IoCheckmarkCircleSharp style={{ fontSize: "14px" }} />
+                    </span>
+                    <FiShoppingBag style={{ fontSize: "22px" }} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Admin Tools */}
+
+                  <div className="admin-action-icon" title="System Alerts">
+                    {adminAlerts > 0 && <span className="count-badge">{adminAlerts}</span>}
+                    <IoNotificationsOutline style={{ fontSize: "22px" }} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* BOTTOM HEADER SECTION */}
+        {/* BOTTOM ROW */}
         <div className="bottom-header-row">
           <div className="bottom-header-content">
             <div
@@ -392,24 +453,23 @@ const Header = () => {
 
               <input
                 value={searchText}
-                placeholder="Search products"
+                placeholder={isAdmin ? "Search database matching SKUs, Order IDs..." : "Search products"}
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
 
               <div className="search-button" onClick={handleSearch}>
-                Search
+                {isAdmin ? "Query" : "Search"}
               </div>
 
-              {showSuggestions && suggestions.length > 0 && (
+              {/* Dynamic Customer Search Suggest Dropdowns */}
+              {showSuggestions && suggestions.length > 0 && !isAdmin && (
                 <div className="suggestions">
                   {suggestions.map((item) => (
                     <div
                       key={item._id}
                       className="suggestion-item"
-                      onMouseDown={() =>
-                        handleSuggestionClick(item.name.toLowerCase())
-                      }
+                      onMouseDown={() => handleSuggestionClick(item.name.toLowerCase())}
                     >
                       {item.name.toLowerCase()}
                     </div>
@@ -419,10 +479,10 @@ const Header = () => {
             </div>
 
             <div className="bottom-header-links">
-              <Link to="/login" onClick={resetSearch}>
-                ⏻Logout
-              </Link>
-              <div className="profile"></div>
+              <span style={{ cursor: "pointer", color: "white", fontWeight: 600 }} onClick={handleLogout}>
+                ⏻ Logout
+              </span>
+              <div className="profile">{isAdmin ? "A" : "U"}</div>
             </div>
           </div>
         </div>

@@ -12,30 +12,25 @@ import "react-toastify/dist/ReactToastify.css";
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cart = useSelector((state) => state.mycart.cart);
+  const cart = useSelector((state) => state.mycart.cart || []);
 
   // login check
-  const isLoggedIn =
-    localStorage.getItem("user") || localStorage.getItem("token");
+  const isLoggedIn = localStorage.getItem("user") || localStorage.getItem("token");
 
-  // total price
+  // Pricing calculations
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qnty, 0);
-
-  // total quantity
   const totalQty = cart.reduce((sum, item) => sum + item.qnty, 0);
+  
+  // 🚚 Shipping fee updated to ₹29
+  const shippingFee = 29; 
+  const total = subtotal + shippingFee;
 
   return (
     <>
-      {/* ===== CART CSS (PREVIOUS LAYOUT) ===== */}
+      {/* ===== CART CSS ===== */}
       <style>{`
-        * {
-          box-sizing: border-box;
-          font-family: "Inter", system-ui, sans-serif;
-        }
-
-        body {
-          background: #f4f6f8;
-        }
+        * { box-sizing: border-box; font-family: "Inter", system-ui, sans-serif; }
+        body { background: #f4f6f8; }
 
         .cart-page {
           min-height: 72vh;
@@ -76,34 +71,13 @@ const Cart = () => {
           object-fit: contain;
         }
 
-        .cart-info {
-          flex: 1;
-        }
-
-        .cart-info h4 {
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 6px;
-        }
-
-        .cart-info p {
-          font-size: 13px;
-          color: #777;
-          margin-bottom: 6px;
-        }
-
-        .cart-info .price {
-          font-weight: 600;
-          font-size: 15px;
-        }
+        .cart-info { flex: 1; }
+        .cart-info h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .cart-info p { font-size: 13px; color: #777; margin-bottom: 6px; }
+        .cart-info .price { font-weight: 600; font-size: 15px; }
 
         /* ===== QUANTITY ===== */
-        .quantity {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
+        .quantity { display: flex; align-items: center; gap: 10px; }
         .quantity button {
           width: 34px;
           height: 34px;
@@ -116,30 +90,10 @@ const Cart = () => {
           justify-content: center;
         }
 
-        .quantity button:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .quantity span {
-          font-weight: 600;
-          min-width: 22px;
-          text-align: center;
-        }
-
-        .item-total {
-          font-weight: 700;
-          min-width: 90px;
-          text-align: right;
-        }
-
-        .remove-btn {
-          background: transparent;
-          border: none;
-          color: #c00;
-          font-size: 18px;
-          cursor: pointer;
-        }
+        .quantity button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .quantity span { font-weight: 600; min-width: 22px; text-align: center; }
+        .item-total { font-weight: 700; min-width: 90px; text-align: right; }
+        .remove-btn { background: transparent; border: none; color: #c00; font-size: 18px; cursor: pointer; }
 
         /* ===== SUMMARY ===== */
         .cart-summary {
@@ -150,23 +104,9 @@ const Cart = () => {
           box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
 
-        .cart-summary h3 {
-          font-size: 15px;
-          margin-bottom: 20px;
-        }
-
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 14px;
-          font-size: 13.5px;
-        }
-
-        .summary-row.total {
-          font-size: 16px;
-          font-weight: 600;
-          margin-top: 18px;
-        }
+        .cart-summary h3 { font-size: 15px; margin-bottom: 20px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 13.5px; }
+        .summary-row.total { font-size: 16px; font-weight: 600; margin-top: 18px; }
 
         .checkout-btn {
           margin-top: 0px;
@@ -182,20 +122,11 @@ const Cart = () => {
           cursor: pointer;
         }
 
-        .checkout-btn:hover {
-          background: #1b0f6f;
-        }
+        .checkout-btn:hover { background: #1b0f6f; }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-          .cart-item {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .item-total {
-            text-align: left;
-          }
+          .cart-item { flex-direction: column; align-items: flex-start; }
+          .item-total { text-align: left; }
         }
       `}</style>
 
@@ -204,7 +135,9 @@ const Cart = () => {
         <h2 className="cart-title">My Cart</h2>
 
         {cart.length === 0 ? (
-          <p className="empty-cart" style={{background:"#0c0243",height:"300px",color:"white", padding:"115px",borderRadius:"25px"}}>Your cart is empty<span style={{fontSize:"30px"}}>🛒</span></p>
+          <p className="empty-cart" style={{background:"#0c0243",height:"300px",color:"white", padding:"115px",borderRadius:"25px"}}>
+            Your cart is empty<span style={{fontSize:"30px"}}>🛒</span>
+          </p>
         ) : (
           <>
             {cart.map((item) => (
@@ -232,10 +165,7 @@ const Cart = () => {
 
                 <div className="item-total">₹{item.price * item.qnty}</div>
 
-                <button
-                  className="remove-btn"
-                  onClick={() => dispatch(removeFromCart(item))}
-                >
+                <button className="remove-btn" onClick={() => dispatch(removeFromCart(item))}>
                   <FiTrash2 />
                 </button>
               </div>
@@ -256,18 +186,13 @@ const Cart = () => {
               </div>
 
               <div className="summary-row">
-                <span>Handling Fee</span>
-                <span>₹59</span>
-              </div>
-
-              <div className="summary-row">
-                <span>Shipping</span>
-                <span>Free</span>
+                <span>Shipping Fee</span>
+                <span>₹{shippingFee}</span>
               </div>
 
               <div className="summary-row total">
                 <span>Total</span>
-                <span>₹{subtotal}</span>
+                <span>₹{total}</span>
               </div>
 
               <button
@@ -279,14 +204,9 @@ const Cart = () => {
                       autoClose: 2000,
                     });
 
-                    // ⏳ wait for toast, then redirect
-                    setTimeout(() => {
-                      navigate("/login");
-                    }, 2000);
-
+                    setTimeout(() => { navigate("/login"); }, 2000);
                     return;
                   }
-
                   navigate("/checkout");
                 }}
               >

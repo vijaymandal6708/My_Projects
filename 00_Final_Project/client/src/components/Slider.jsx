@@ -13,6 +13,7 @@ const Slider = () => {
   const radius = 18;
   const circumference = 2 * Math.PI * radius;
 
+  // Single function to handle resetting and starting the timer
   const startProgress = () => {
     clearInterval(timerRef.current);
     setProgress(0);
@@ -21,6 +22,8 @@ const Slider = () => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timerRef.current);
+          // Trigger the next slide precisely when the progress circle finishes
+          carouselInstance.current?.next();
           return 100;
         }
         return prev + (STEP / SLIDE_TIME) * 100;
@@ -35,18 +38,19 @@ const Slider = () => {
     let loadedCount = 0;
 
     const initCarousel = () => {
+      // 1. TURN OFF Bootstrap's internal timer by setting interval to false
       carouselInstance.current = new Carousel(carouselRef.current, {
-        interval: SLIDE_TIME,
+        interval: false, 
         pause: false,
         wrap: true,
       });
 
-      carouselRef.current.addEventListener(
-        "slid.bs.carousel",
-        startProgress
-      );
+      // 2. Listen for slide changes (both auto and manual click) to restart progress
+      carouselRef.current.addEventListener("slide.bs.carousel", () => {
+        startProgress();
+      });
 
-      carouselInstance.current.cycle(); // ✅ FORCE START
+      // Start the very first timer
       startProgress();
     };
 
@@ -63,7 +67,6 @@ const Slider = () => {
       }
     });
 
-    // If all images already cached
     if (loadedCount === images.length) {
       initCarousel();
     }
@@ -74,8 +77,7 @@ const Slider = () => {
     };
   }, []);
 
-  const dashOffset =
-    circumference - (progress / 100) * circumference;
+  const dashOffset = circumference - (progress / 100) * circumference;
 
   return (
     <div className="container mt-4 position-relative">
@@ -96,13 +98,11 @@ const Slider = () => {
           ))}
         </div>
 
+        {/* Manual Buttons: Bootstrap handles the move, 'slide.bs.carousel' handles the reset */}
         <button
           className="carousel-control-prev"
           type="button"
-          onClick={() => {
-            carouselInstance.current.prev();
-            startProgress();
-          }}
+          onClick={() => carouselInstance.current.prev()}
         >
           <span className="carousel-control-prev-icon" />
         </button>
@@ -110,10 +110,7 @@ const Slider = () => {
         <button
           className="carousel-control-next"
           type="button"
-          onClick={() => {
-            carouselInstance.current.next();
-            startProgress();
-          }}
+          onClick={() => carouselInstance.current.next()}
         >
           <span className="carousel-control-next-icon" />
         </button>

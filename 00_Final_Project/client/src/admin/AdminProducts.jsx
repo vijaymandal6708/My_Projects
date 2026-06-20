@@ -9,21 +9,13 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  /* ================= FETCH PRODUCTS ================= */
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const admintoken = localStorage.getItem("admintoken");
-
-        const res = await axios.get(
-          "http://localhost:8000/admin/products",
-          {
-            headers: {
-              Authorization: `Bearer ${admintoken}`,
-            },
-          }
-        );
-
+        const res = await axios.get("http://localhost:8000/admin/products", {
+          headers: { Authorization: `Bearer ${admintoken}` },
+        });
         setProducts(res.data.products);
       } catch (err) {
         console.error("Failed to load products", err);
@@ -31,116 +23,42 @@ const AdminProducts = () => {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
 
-  /* ================= DELETE CONFIRM TOAST ================= */
-const handleDelete = async (id) => {
-  toast.warn(
-    ({ closeToast }) => (
-      <div>
-        <p style={{ marginBottom: "10px", fontWeight: 600 }}>
-          Are you sure you want to delete this product?
-        </p>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            style={{
-              background: "#dc2626",
-              color: "#fff",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-            onClick={async () => {
-              closeToast();
-
-              // 🔄 Loader toast
-              const toastId = toast.loading("Deleting product...");
-
-              try {
-                const admintoken = localStorage.getItem("admintoken");
-
-                await axios.delete(
-                  `http://localhost:8000/admin/delete-product/${id}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${admintoken}`,
-                    },
-                  }
-                );
-
-                // ✅ Update toast to success
-                toast.update(toastId, {
-                  render: "Product deleted successfully ✅",
-                  type: "success",
-                  isLoading: false,
-                  autoClose: 2000,
-                });
-
-                // ✅ Remove from UI
-                setProducts((prev) =>
-                  prev.filter((p) => p._id !== id)
-                );
-              } catch (err) {
-                toast.update(toastId, {
-                  render: "Failed to delete product ❌",
-                  type: "error",
-                  isLoading: false,
-                  autoClose: 2500,
-                });
-              }
-            }}
-          >
-            Yes, Delete
-          </button>
-
-          <button
-            style={{
-              background: "#e5e7eb",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-            onClick={closeToast}
-          >
-            Cancel
-          </button>
+  const handleDelete = async (id) => {
+    toast.warn(
+      ({ closeToast }) => (
+        <div>
+          <p style={{ marginBottom: "10px", fontWeight: 600 }}>Are you sure you want to delete this product?</p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              style={{ background: "#dc2626", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "6px", cursor: "pointer" }}
+              onClick={async () => {
+                closeToast();
+                const toastId = toast.loading("Deleting...");
+                try {
+                  const admintoken = localStorage.getItem("admintoken");
+                  await axios.delete(`http://localhost:8000/admin/delete-product/${id}`, {
+                    headers: { Authorization: `Bearer ${admintoken}` },
+                  });
+                  toast.update(toastId, { render: "Product deleted ✅", type: "success", isLoading: false, autoClose: 2000 });
+                  setProducts((prev) => prev.filter((p) => p._id !== id));
+                } catch (err) {
+                  toast.update(toastId, { render: "Failed to delete ❌", type: "error", isLoading: false, autoClose: 2500 });
+                }
+              }}
+            >
+              Yes, Delete
+            </button>
+            <button style={{ background: "#e5e7eb", border: "none", padding: "6px 12px", borderRadius: "6px", cursor: "pointer" }} onClick={closeToast}>
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-    ),
-    {
-      autoClose: false,
-      closeOnClick: false,
-      draggable: false,
-    }
-  );
-};
-
-  /* ================= DELETE API ================= */
-  const confirmDeleteProduct = async (id) => {
-    try {
-      const admintoken = localStorage.getItem("admintoken");
-
-      await axios.delete(
-        `http://localhost:8000/admin/delete-product/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${admintoken}`,
-          },
-        }
-      );
-
-      setProducts((prev) => prev.filter((p) => p._id !== id));
-
-      toast.success("Product deleted successfully 🗑️");
-    } catch (err) {
-      console.error("Delete product failed", err);
-      toast.error("Failed to delete product ❌");
-    }
+      ),
+      { autoClose: false, closeOnClick: false, draggable: false }
+    );
   };
 
   return (
@@ -148,242 +66,77 @@ const handleDelete = async (id) => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <style>{`
-        * {
-          box-sizing: border-box;
-          font-family: "Inter", system-ui, sans-serif;
-        }
+        .admin-page-container { width: 100%; max-width: 1100px; margin: auto; padding: 10px 24px 40px; }
+        
+        /* Centered Header */
+        .admin-page-header { text-align: center; margin-top: 24px; margin-bottom: 36px; }
+        .page-title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -0.02em; }
+        .page-subtitle { font-size: 14px; color: #64748b; margin: 0; font-weight: 400; }
 
-        body {
-          background: #f4f6fb;
-        }
-
-        .page {
-          max-width: 1400px;
-          margin: auto;
-          padding: 0px 30px 20px;
-        }
-
-        .title {
-          font-size: 28px;
-          font-weight: 700;
-          margin-bottom: 30px;
-          text-align: center;
-        }
-
-        .table-container {
-          background: #fff;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        thead {
-          background: #0f172a;
-          color: #fff;
-        }
-
-        th {
-          padding: 16px 18px;
-          font-size: 14px;
-          font-weight: 600;
-          text-align: left;
-        }
-
-        .product-text-heading {
-          padding-left: 130px;
-        }
-
-        td {
-          padding: 20px 18px;
-          vertical-align: middle;
-          border-bottom: 1px solid #eee;
-          font-size: 14px;
-        }
-
-        tbody tr:hover {
-          background: #f9fafb;
-        }
-
-        .product-cell {
-          display: flex;
-          align-items: center;
-          gap: 26px;
-          margin-left: 20px;
-        }
-
-        .product-cell img {
-          width: 60px;
-          height: 60px;
-          object-fit: contain;
-          border-radius: 10px;
-          background: #f1f1f1;
-          padding: 6px;
-        }
-
-        .product-info {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .product-name {
-          font-size: 16px;
-          font-weight: 600;
-          color: #111827;
-        }
-
-        .sku {
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        .meta-row {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        .badge {
-          padding: 4px 10px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .category {
-          background: #e0e7ff;
-          color: #3730a3;
-        }
-
-        .active {
-          background: #dcfce7;
-          color: #166534;
-        }
-
-        .out {
-          background: #fee2e2;
-          color: #b91c1c;
-        }
-
-        .price {
-          font-weight: 600;
-        }
-
-        .stock {
-          font-weight: 600;
-        }
-
-        .action-buttons {
-          display: flex;
-          gap: 10px;
-        }
-
-        .edit-btn {
-          padding: 8px 14px;
-          border-radius: 8px;
-          border: none;
-          background: #0f172a;
-          color: #fff;
-          font-size: 13px;
-          cursor: pointer;
-        }
-
-        .edit-btn:hover {
-          background: #1e293b;
-        }
-
-        .delete-btn {
-          padding: 8px 14px;
-          border-radius: 8px;
-          border: none;
-          background: #dc2626;
-          color: #fff;
-          font-size: 13px;
-          cursor: pointer;
-        }
-
-        .delete-btn:hover {
-          background: #b91c1c;
-        }
-
-        .empty {
-          text-align: center;
-          padding: 100px;
-          color: #555;
-          font-size: 16px;
-        }
+        /* Table */
+        .table-container { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        th { padding: 16px 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; text-align: left; }
+        td { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        
+        .product-cell { display: flex; align-items: center; gap: 15px; }
+        .product-cell img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .product-name { font-weight: 600; color: #0f172a; }
+        
+        .badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+        .category { background: #e0e7ff; color: #3730a3; }
+        .active { background: #dcfce7; color: #166534; }
+        .out { background: #fee2e2; color: #b91c1c; }
+        
+        .edit-btn { padding: 6px 12px; border-radius: 6px; border: none; background: #0f172a; color: #fff; font-size: 12px; cursor: pointer; }
+        .delete-btn { padding: 6px 12px; border-radius: 6px; border: none; background: #ef4444; color: #fff; font-size: 12px; cursor: pointer; margin-left: 8px; }
+        .empty { text-align: center; padding: 60px; color: #64748b; }
       `}</style>
 
-      <div className="page">
-        <h2 className="title">Products & Stocks</h2>
+      <div className="admin-page-container">
+        <div className="admin-page-header">
+          <h2 className="page-title">Products & Stocks List</h2>
+          <p className="page-subtitle">Manage your digital inventory, pricing, and stock metrics</p>
+        </div>
 
         {loading ? (
-          <p className="empty">Loading products...</p>
+          <p className="empty">Loading inventory database...</p>
         ) : products.length === 0 ? (
-          <p className="empty">No products found</p>
+          <p className="empty">No products found.</p>
         ) : (
           <div className="table-container">
             <table>
               <thead>
                 <tr>
-                  <th className="product-text-heading">Product</th>
+                  <th>Product Details</th>
                   <th>Price</th>
                   <th>Stock</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {products.map((p) => (
                   <tr key={p._id}>
                     <td>
                       <div className="product-cell">
                         <img src={p.defaultImage} alt={p.name} />
-                        <div className="product-info">
+                        <div>
                           <div className="product-name">{p.name}</div>
-                          <div className="sku">Product id : {p._id}</div>
-                          <div className="meta-row">
+                          <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
                             <span className="badge category">{p.category}</span>
-                            <span
-                              className={`badge ${
-                                p.quantity === 0 ? "out" : "active"
-                              }`}
-                            >
-                              {p.quantity === 0 ? "Out of Stock" : "Active"}
+                            <span className={`badge ${p.quantity === 0 ? "out" : "active"}`}>
+                              {p.quantity === 0 ? "Out of Stock" : "In Stock"}
                             </span>
                           </div>
                         </div>
                       </div>
                     </td>
-
-                    <td className="price">₹{p.price}</td>
-                    <td className="stock">{p.quantity}</td>
-
+                    <td style={{ fontWeight: 600 }}>₹{p.price}</td>
+                    <td style={{ fontWeight: 600 }}>{p.quantity}</td>
                     <td>
-                      <div className="action-buttons">
-                        <button
-                          className="edit-btn"
-                          onClick={() =>
-                            navigate(
-                              `/admin-dashboard/edit-product/${p._id}`
-                            )
-                          }
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          className="delete-btn"
-                          onClick={() => handleDelete(p._id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <button className="edit-btn" onClick={() => navigate(`/admin-dashboard/edit-product/${p._id}`)}>Edit</button>
+                      <button className="delete-btn" onClick={() => handleDelete(p._id)}>Delete</button>
                     </td>
                   </tr>
                 ))}

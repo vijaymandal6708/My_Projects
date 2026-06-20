@@ -5,11 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { clearCart } from "../cartSlice";
 
-
 const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cartItems = useSelector((state) => state.mycart.cart);
+  const cartItems = useSelector((state) => state.mycart.cart || []);
 
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [address, setAddress] = useState({
@@ -23,7 +22,6 @@ const Checkout = () => {
 
   /* ================= FETCH USER ================= */
   useEffect(() => {
-    console.log("🛒 CART ITEMS:", cartItems);
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -39,12 +37,12 @@ const Checkout = () => {
         });
 
         setAddress({
-          name: res.data.name,
-          email: res.data.email,
-          phone: res.data.phone,
-          city: res.data.city,
-          pincode: res.data.pincode,
-          addressLine: res.data.address,
+          name: res.data.name || "",
+          email: res.data.email || "",
+          phone: res.data.phone || "",
+          city: res.data.city || "",
+          pincode: res.data.pincode || "",
+          addressLine: res.data.address || "",
         });
       } catch (err) {
         toast.error("Failed to load user address");
@@ -60,7 +58,8 @@ const Checkout = () => {
     0
   );
 
-  const shipping = subtotal > 1000 ? 0 : 99;
+  // 🚚 Shipping fee flat rate of ₹29
+  const shipping = 29;
   const total = subtotal + shipping;
 
   /* ================= SAVE ALTERNATE ADDRESS ================= */
@@ -77,9 +76,7 @@ const Checkout = () => {
           pincode: address.pincode,
           addressLine: address.addressLine,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch {
       console.log("Alternate address not saved");
@@ -87,7 +84,8 @@ const Checkout = () => {
   };
 
   /* ================= CREATE ORDER ================= */
-  const createOrder = async () => {
+  // 🕒 Accepts the exact order time so it can be saved in the DB
+  const createOrder = async (orderTime) => {
     const token = localStorage.getItem("token");
 
     return axios.post(
@@ -110,10 +108,9 @@ const Checkout = () => {
         },
         subtotal,
         totalAmount: total,
+        createdAt: orderTime, // ✅ Sends timestamp string to database
       },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
   };
 
@@ -147,17 +144,27 @@ const Checkout = () => {
               await saveAlternateAddress();
             }
 
-            await createOrder(); // ✅ FIXED (this was missing proper handling)
+            // 🕒 Generate standard unified local timestamp string right at verification success
+            const preciseOrderTime = new Date().toLocaleString();
+
+            const dbOrderRes = await createOrder(preciseOrderTime);
+            const realOrderId = dbOrderRes.data?.orderId;
             
             dispatch(clearCart());
-
-            // ✅ SCROLL CHECKOUT PAGE TO TOP
             window.scrollTo({ top: 0, behavior: "smooth" });
-
             toast.success("Order placed successfully ✅");
+            
             setTimeout(() => {
-              navigate("/order-confirmation");
-            }, 3000);
+              navigate("/order-confirmation", { 
+                state: { 
+                  orderId: realOrderId,
+                  items: cartItems,
+                  totalAmount: total,
+                  shippingAddress: address,
+                  orderTime: preciseOrderTime // ✅ Passes exact database timestamp to confirmation screen
+                } 
+              });
+            }, 2000);
           } catch (err) {
             toast.error("Failed to place order ❌");
           }
@@ -173,7 +180,6 @@ const Checkout = () => {
     <>
       <ToastContainer position="top-right" autoClose={2000} />
 
-      {/* ================= CSS ================= */}
       <style>{`
         * { box-sizing: border-box; font-family: "Inter", system-ui, sans-serif; }
         body { background: #f4f6f8; }
@@ -185,12 +191,7 @@ const Checkout = () => {
           padding: 40px 20px 80px;
         }
 
-        .checkout-title {
-          font-size: 30px;
-          font-weight: 700;
-          margin-bottom: 30px;
-          text-align: center;
-        }
+        .checkout-title { font-size: 30px; font-weight: 700; margin-bottom: 30px; text-align: center; }
 
         .section {
           background: #fff;
@@ -200,42 +201,13 @@ const Checkout = () => {
           box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
 
-        .section h3 {
-          font-size: 20px;
-          margin-bottom: 20px;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        .form-grid input {
-          height: 44px;
-          padding: 10px 14px;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-        }
-
-        .form-grid input:disabled {
-          background: #f1f1f1;
-        }
-
-        .form-grid .full {
-          grid-column: span 2;
-        }
-
-        .summary-item {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
-        }
-
-        .summary-total {
-          font-size: 18px;
-          font-weight: 700;
-        }
+        .section h3 { font-size: 20px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-grid input { height: 44px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; }
+        .form-grid input:disabled { background: #f1f1f1; }
+        .form-grid .full { grid-column: span 2; }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .summary-total { font-size: 18px; font-weight: 700; }
 
         .pay-btn {
           margin-top: 22px;
@@ -250,9 +222,7 @@ const Checkout = () => {
           margin-left: 250px;
         }
 
-        .pay-btn:hover {
-          background: #1b0f6f;
-        }
+        .pay-btn:hover { background: #1b0f6f; }
       `}</style>
 
       <div className="checkout-page">
@@ -272,14 +242,16 @@ const Checkout = () => {
           </label>
 
           <div className="form-grid">
-            <input value={address.name} disabled={!useNewAddress} />
+            <input 
+              value={address.name} 
+              disabled={!useNewAddress} 
+              onChange={(e) => setAddress({ ...address, name: e.target.value })}
+            />
             <input value={address.email} disabled />
             <input
               value={address.phone}
               disabled={!useNewAddress}
-              onChange={(e) =>
-                setAddress({ ...address, phone: e.target.value })
-              }
+              onChange={(e) => setAddress({ ...address, phone: e.target.value })}
             />
             <input
               value={address.city}
@@ -290,16 +262,12 @@ const Checkout = () => {
               className="full"
               value={address.addressLine}
               disabled={!useNewAddress}
-              onChange={(e) =>
-                setAddress({ ...address, addressLine: e.target.value })
-              }
+              onChange={(e) => setAddress({ ...address, addressLine: e.target.value })}
             />
             <input
               value={address.pincode}
               disabled={!useNewAddress}
-              onChange={(e) =>
-                setAddress({ ...address, pincode: e.target.value })
-              }
+              onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
             />
           </div>
         </div>
@@ -316,6 +284,11 @@ const Checkout = () => {
               <strong>₹{item.price * item.qnty}</strong>
             </div>
           ))}
+
+          <div className="summary-item">
+            <span>Shipping Fee</span>
+            <strong>₹{shipping}</strong>
+          </div>
 
           <div className="summary-item summary-total">
             <span>Total</span>

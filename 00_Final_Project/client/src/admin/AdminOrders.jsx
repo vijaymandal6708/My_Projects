@@ -1,266 +1,139 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem("admintoken");
+      const res = await axios.get("http://localhost:8000/admin/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data.orders);
+    } catch (err) {
+      console.error("Failed to fetch orders", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem("admintoken");
-
-        const res = await axios.get(
-          "http://localhost:8000/admin/orders",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        setOrders(res.data.orders);
-      } catch (err) {
-        console.error("Failed to fetch orders", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
   }, []);
 
+  // FUNCTION TO UPDATE STATUS
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem("admintoken");
+      await axios.patch(`http://localhost:8000/admin/update-order-status/${orderId}`, 
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Update local state to reflect change immediately
+      setOrders((prev) => 
+        prev.map(o => o._id === orderId ? { ...o, orderStatus: newStatus } : o)
+      );
+    } catch (err) {
+      console.error("Failed to update status", err);
+      alert("Failed to update status");
+    }
+  };
+
   return (
     <>
-      {/* ================= CSS ================= */}
       <style>{`
-        * {
-          box-sizing: border-box;
-          font-family: "Inter", system-ui, sans-serif;
-        }
+        .orders-page { width: 100%; max-width: 1100px; margin: auto; padding: 10px 24px 40px; }
+        .admin-page-header { text-align: center; margin-top: 24px; margin-bottom: 36px; }
+        .page-title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; }
+        .page-subtitle { font-size: 14px; color: #64748b; margin: 0; }
 
-        body {
-          background: #f4f6f8;
-        }
+        .premium-empty-container { background: #ffffff; border-radius: 14px; padding: 50px 40px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; max-width: 650px; margin: 40px auto 0; }
+        .empty-icon-circle { width: 64px; height: 64px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748b; margin-bottom: 20px; }
+        .empty-dashboard-btn { background: #0f172a; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
 
-        /* ===== PAGE ===== */
-        .orders-page {
-          min-height: 100vh;
-          max-width: 1100px;
-          margin: auto;
-          padding: 30px 20px 60px;
-        }
-
-        .orders-title {
-          font-size: 26px;
-          font-weight: 700;
-          text-align: center;
-          margin-bottom: 30px;
-        }
-
-        /* ===== CARD ===== */
-        .order-card {
-          background: #fff;
-          border-radius: 14px;
-          padding: 16px 20px;
-          margin-bottom: 18px;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        }
-
-        /* ===== HEADER ===== */
-        .order-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-
-        .order-id {
-          font-size: 13px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .status-badge {
-          font-size: 12px;
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-weight: 600;
-          text-transform: capitalize;
-        }
-
-        .status-placed {
-          background: #fff4e5;
-          color: #d9822b;
-        }
-
-        .status-delivered {
-          background: #e6f9ef;
-          color: #1f9d55;
-        }
-
-        /* ===== META ===== */
-        .order-meta {
-          display: flex;
-          gap: 22px;
-          font-size: 12px;
-          color: #666;
-          margin-bottom: 10px;
-        }
-
-        .paid-badge {
-          background: rgba(46, 204, 113, 0.15);
-          color: #2ecc71;
-          padding: 2px 10px;
-          border-radius: 10px;
-          font-weight: 600;
-          margin-left: 6px;
-        }
-
-        /* ===== ITEMS ===== */
-        .items {
-          border-top: 1px solid #eee;
-          padding-top: 10px;
-        }
-
-        .item-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 8px;
-          font-size: 13px;
-        }
-
-        .item-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          max-width: 75%;
-        }
-
-        .item-left img {
-          width: 40px;
-          height: 40px;
-          object-fit: contain;
-          border-radius: 6px;
-          background: #f1f1f1;
-        }
-
-        .item-name {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        /* ===== PRICE SUMMARY ===== */
-        .price-summary {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 10px;
-        }
-
-        .price-box {
-          width: 200px;
-          font-size: 13px;
-          background: #fafafa;
-          padding: 10px 14px;
-          border-radius: 10px;
-          border: 1px solid #eee;
-        }
-
-        .price-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 4px;
-          color: #555;
-        }
-
-        .price-row.total {
-          margin-top: 6px;
-          padding-top: 6px;
-          border-top: 1px dashed #ddd;
-          font-weight: 700;
-          font-size: 14px;
-          color: #111;
-        }
-
-        .empty {
-          text-align: center;
-          margin-top: 120px;
-          font-size: 18px;
-          color: #555;
-        }
-
-        @media (max-width: 600px) {
-          .order-meta {
-            flex-direction: column;
-            gap: 4px;
-          }
-
-          .item-left {
-            max-width: 65%;
-          }
-        }
+        .order-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .order-id { font-size: 13px; font-weight: 600; color: #334155; }
+        
+        /* UPDATED: Dropdown styling matches your existing layout */
+        .status-dropdown { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; border: 1px solid #cbd5e1; cursor: pointer; background: #fff; }
+        
+        .order-meta { display: flex; gap: 20px; font-size: 12px; color: #64748b; margin-bottom: 12px; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .item-left { display: flex; align-items: center; gap: 10px; }
+        .item-left img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; background: #f8fafc; }
+        
+        .price-summary { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .price-box { width: 220px; font-size: 13px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: #475569; }
+        .total { border-top: 1px solid #e2e8f0; margin-top: 6px; padding-top: 6px; font-weight: 700; color: #0f172a; }
       `}</style>
 
       <div className="orders-page">
-        <h2 className="orders-title">My Orders</h2>
+        <div className="admin-page-header">
+          <h2 className="page-title">Manage Orders</h2>
+          <p className="page-subtitle">Track customer checkouts, fulfillment status, and transaction history</p>
+        </div>
 
         {loading ? (
-          <p className="empty">Loading orders...</p>
+          <p style={{textAlign: 'center', color: '#64748b'}}>Loading database order entries...</p>
         ) : orders.length === 0 ? (
-          <p className="empty">You have no orders yet 📦</p>
+          <div className="premium-empty-container">
+            <div className="empty-icon-circle">📦</div>
+            <h5>No transaction database records found</h5>
+            <p style={{fontSize: '14px', color: '#64748b', margin: '0 0 24px 0'}}>
+              The store transaction ledger is currently empty. Historical checkout actions 
+              and fulfillment details will compile here once live purchase orders are indexed.
+            </p>
+            <button className="empty-dashboard-btn" onClick={() => navigate("/admin-dashboard")}>
+              Return to Metrics
+            </button>
+          </div>
         ) : (
           orders.map((order) => (
             <div className="order-card" key={order._id}>
-              {/* HEADER */}
               <div className="order-header">
                 <div className="order-id">Order ID: {order._id}</div>
-                <div className={`status-badge status-${order.orderStatus}`}>
-                  {order.orderStatus}
-                </div>
+                {/* STATUS UPDATER DROPDOWN */}
+                <select 
+                  value={order.orderStatus} 
+                  onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                  className="status-dropdown"
+                >
+                  <option value="Placed">Placed</option>
+                  <option value="Packed">Packed</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                </select>
               </div>
 
-              {/* META */}
               <div className="order-meta">
-                <span>
-                  Date: {new Date(order.createdAt).toLocaleDateString()}
-                </span>
+                <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
                 <span>Items: {order.items.length}</span>
-                <span>
-                  Payment:
-                  <span className="paid-badge">PAID</span>
-                </span>
               </div>
 
-              {/* ITEMS */}
               <div className="items">
                 {order.items.map((item, i) => (
                   <div className="item-row" key={i}>
                     <div className="item-left">
                       <img src={item.image} alt={item.name} />
-                      <div className="item-name">
-                        {item.name} × {item.quantity}
-                      </div>
+                      <span>{item.name} × {item.quantity}</span>
                     </div>
                     <strong>₹{item.price * item.quantity}</strong>
                   </div>
                 ))}
               </div>
 
-              {/* PRICE */}
               <div className="price-summary">
                 <div className="price-box">
-                  <div className="price-row">
-                    <span>Subtotal</span>
-                    <span>₹{order.subtotal}</span>
-                  </div>
-                  <div className="price-row">
-                    <span>Shipping</span>
-                    <span>₹{order.shippingFee}</span>
-                  </div>
-                  <div className="price-row total">
-                    <span>Total</span>
-                    <span>₹{order.totalAmount}</span>
-                  </div>
+                  <div className="price-row"><span>Subtotal</span><span>₹{order.subtotal}</span></div>
+                  <div className="price-row"><span>Shipping</span><span>₹{order.shippingFee}</span></div>
+                  <div className="price-row total"><span>Total Amount</span><span>₹{order.totalAmount}</span></div>
                 </div>
               </div>
             </div>
