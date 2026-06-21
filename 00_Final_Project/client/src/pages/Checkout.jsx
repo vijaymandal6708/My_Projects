@@ -107,6 +107,7 @@ const Checkout = () => {
           addressLine: address.addressLine,
         },
         subtotal,
+        shippingFee: shipping,
         totalAmount: total,
         createdAt: orderTime, // ✅ Sends timestamp string to database
       },

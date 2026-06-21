@@ -19,6 +19,9 @@ const Orders = () => {
           }
         );
 
+        // 💡 FIXED: Sets data directly from backend body payload response
+        // If your backend still uses an envelope object like { orders: [...] }, 
+        // this fallback line handles BOTH safely:
         const orderData = Array.isArray(res.data) ? res.data : res.data.orders || [];
         setOrders(orderData);
       } catch (err) {
@@ -45,7 +48,7 @@ const Orders = () => {
 
         /* ===== PAGE ===== */
         .orders-page {
-          min-height: 70vh;
+          min-height: 72vh;
           max-width: 1000px;
           margin: auto;
           padding: 40px 20px 80px;
@@ -58,88 +61,111 @@ const Orders = () => {
           margin-bottom: 30px;
         }
 
-        /* ===== COMPACT ORDER CARD ===== */
+        /* ===== CARD ===== */
         .order-card {
           background: #ffffff;
-          border-radius: 10px;
-          padding: 20px 54px; /* Reduced vertical & horizontal padding */
-          margin-bottom: 10px; /* Reduced space between cards */
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          border-radius: 14px;
+          padding: 16px 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
 
-        /* Combined header into a clean horizontal line */
-        .order-header-row {
+        .order-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          flex-wrap: wrap;
-          gap: 10px;
-          padding-bottom: 6px;
-          border-bottom: 1px dashed #f0f0f0;
           margin-bottom: 6px;
         }
 
-        .order-left-meta {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+        .order-id {
+          font-size: 13.5px;
+          font-weight: 600;
+        }
+
+        .order-status {
+          padding: 4px 12px;
+          border-radius: 20px;
           font-size: 12px;
-          color: #555;
-        }
-
-        .order-id-label {
-          font-weight: 700;
-          color: #333;
-        }
-
-        .order-right-badges {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .paid-badge {
-          background: rgba(46, 204, 113, 0.15);
-          color: #1f9d55;
-          padding: 2px 8px;
-          border-radius: 4px;
           font-weight: 600;
-          font-size: 11px;
-        }
-
-        /* ===== DELIVERY BADGES ===== */
-        .delivery-badge {
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 600;
+          background: #eefaf3;
+          color: #2ecc71;
           text-transform: capitalize;
         }
 
-        .status-placed { background: #fff4e5; color: #d9822b; }
-        .status-packed { background: #fef9e7; color: #b7950b; }
-        .status-shipped { background: #e6f4ea; color: #137333; }
-        .status-delivered { background: #e6f9ef; color: #1f9d55; }
-        .status-cancelled { background: #fdecea; color: #d93025; }
+        /* ===== META ===== */
+        .order-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+          font-size: 13px;
+          color: #666;
+          margin-bottom: 8px;
+        }
 
-        /* ===== ITEMS CONTAINER ===== */
+        .paid-badge {
+          background: rgba(157, 253, 152, 0.2);
+          color: #1f9d55;
+          padding: 2px 12px 3px;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 12px;
+          margin-left: 6px;
+        }
+
+        /* ===== DELIVERY STATUS BADGES ===== */
+        .delivery-badge {
+          padding: 3px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 600;
+          margin-left: 6px;
+          text-transform: capitalize;
+        }
+
+        .status-placed {
+          background: #fff4e5;
+          color: #d9822b;
+        }
+
+        .status-packed {
+          background: #fef9e7;
+          color: #b7950b;
+        }
+
+        .status-shipped {
+          background: #e6f4ea;
+          color: #137333;
+        }
+
+        .status-delivered {
+          background: #e6f9ef;
+          color: #1f9d55;
+        }
+
+        .status-cancelled {
+          background: #fdecea;
+          color: #d93025;
+        }
+
+        /* ===== ITEMS ===== */
         .items {
-          margin-bottom: 4px;
+          border-top: 1px solid #eee;
+          padding-top: 8px;
         }
 
         .item-row {
           display: grid;
-          grid-template-columns: 32px 1fr auto; /* Smaller thumbnail image space */
+          grid-template-columns: 44px 1fr auto;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 4px;
-          font-size: 12px;
+          gap: 10px;
+          margin-bottom: 6px;
+          font-size: 13px;
         }
 
         .item-image {
-          width: 32px;
-          height: 32px;
-          border-radius: 4px;
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
           object-fit: cover;
           border: 1px solid #eee;
           background: #fafafa;
@@ -147,9 +173,8 @@ const Orders = () => {
 
         .item-info {
           display: flex;
-          flex-direction: row;
-          align-items: center;
-          gap: 8px;
+          flex-direction: column;
+          gap: 1px;
         }
 
         .item-name {
@@ -158,37 +183,29 @@ const Orders = () => {
         }
 
         .item-qty {
+          font-size: 12px;
           color: #777;
-          font-size: 11px;
-          background: #f0f2f5;
-          padding: 1px 5px;
-          border-radius: 3px;
         }
 
-        /* ===== PRICE SUMMARY LAYOUT ===== */
+        /* ===== PRICE ===== */
         .price-summary {
-          border-top: 1px solid #f0f0f0;
-          padding-top: 6px;
-          margin-top: 4px;
+          border-top: 1px solid #eee;
+          padding-top: 8px;
+          margin-top: 10px;
+          font-size: 13px;
+        }
+
+        .price-row {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          font-size: 12px;
+          margin-bottom: 4px;
         }
 
-        .price-left-details {
-          display: flex;
-          gap: 12px;
-          color: #666;
-        }
-
-        .total-price-display {
-          font-size: 14px;
+        .total {
+          font-size: 15px;
           font-weight: 700;
-          color: #0c0243;
         }
 
-        /* ===== EMPTY RECEPTACLE LAYOUTS ===== */
         .empty-orders {
           text-align: center;
           margin-top: 80px;
@@ -196,16 +213,10 @@ const Orders = () => {
           color: #555;
         }
 
-        @media (max-width: 650px) {
-          .order-header-row {
+        @media (max-width: 600px) {
+          .order-meta {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-          }
-          .price-summary {
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
+            gap: 6px;
           }
         }
       `}</style>
@@ -214,34 +225,42 @@ const Orders = () => {
         <h2 className="orders-title">My Orders</h2>
 
         {loading ? (
-          <p className="empty-orders" style={{background:"#0c0243", height:"200px", color:"white", padding:"65px", borderRadius:"12px"}}>Loading orders...</p>
+          <p className="empty-orders" style={{background:"#0c0243", height:"300px", color:"white", padding:"115px", borderRadius:"25px"}}>Loading orders...</p>
         ) : orders.length === 0 ? (
           <p className="empty-orders" style={{background:"#0c0243", height:"300px", color:"white", padding:"115px", borderRadius:"25px"}}>
-            Your have not placed any order yet <span style={{fontSize:"30px"}}>🛍️</span>
+            Your have not placed any order yet<span style={{fontSize:"30px"}}>🛍️</span>
           </p>
         ) : (
           orders.map((order) => (
             <div className="order-card" key={order._id}>
-              
-              {/* HEADER CONTAINER FIXED AS A SLIM METADATA ROW */}
-              <div className="order-header-row">
-                <div className="order-left-meta">
-                  <span className="order-id-label">ID: {order._id}</span>
-                  <span>•</span>
-                  <span>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}</span>
-                  <span>•</span>
-                  <span>{order.items?.length || 0} Item(s)</span>
-                </div>
-                
-                <div className="order-right-badges">
+              {/* HEADER */}
+              <div className="order-header">
+                <div className="order-id">Order ID: {order._id}</div>
+                <div className="order-status">{order.orderStatus || "placed"}</div>
+              </div>
+
+              {/* META */}
+              <div className="order-meta">
+                <span>
+                  Date: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                </span>
+
+                <span>Items: {order.items?.length || 0}</span>
+
+                <span>
+                  Payment:
                   <span className="paid-badge">PAID</span>
+                </span>
+
+                <span>
+                  Delivery:
                   <span className={`delivery-badge status-${order.orderStatus?.toLowerCase() || "placed"}`}>
                     {order.orderStatus || "placed"}
                   </span>
-                </div>
+                </span>
               </div>
 
-              {/* COMPACTED ITEMS LIST */}
+              {/* ITEMS */}
               <div className="items">
                 {order.items?.map((item, index) => (
                   <div className="item-row" key={index}>
@@ -250,34 +269,43 @@ const Orders = () => {
                       alt={item.name}
                       className="item-image"
                     />
+
                     <div className="item-info">
                       <span className="item-name">{item.name}</span>
-                      <span className="item-qty">x{item.quantity || item.qnty || 1}</span>
+                      {/* 💡 Handles fallback differences for item quantity variables */}
+                      <span className="item-qty">Qty: {item.quantity || item.qnty || 1}</span>
                     </div>
-                    <strong>₹{item.price * (item.quantity || item.qnty || 1)}</strong>
+
+                    <span>₹{item.price * (item.quantity || item.qnty || 1)}</span>
                   </div>
                 ))}
               </div>
 
-              {/* DESTINATION INFORMATION */}
+              {/* SHIPPING DESTINATION (Clean injection to match style specs) */}
               {order.shippingAddress && (
-                <div style={{ fontSize: "11px", color: "#777", marginBottom: "4px", background: "#f8f9fa", padding: "4px 8px", borderRadius: "4px" }}>
+                <div style={{ fontSize: "12.5px", color: "#555", marginTop: "10px", borderTop: "1px dashed #eee", paddingTop: "8px" }}>
                   <strong>Deliver To: </strong> 
-                  {order.shippingAddress.name} — {order.shippingAddress.addressLine}, {order.shippingAddress.city}
+                  {order.shippingAddress.name} — {order.shippingAddress.addressLine}, {order.shippingAddress.city} ({order.shippingAddress.pincode})
                 </div>
               )}
 
-              {/* INTEGRATED CONDENSED PRICING BLOCK */}
+              {/* PRICE */}
               <div className="price-summary">
-                <div className="price-left-details">
-                  <span>Subtotal: ₹{order.subtotal || (order.totalAmount - (order.shippingFee || 0))}</span>
-                  <span>Shipping: ₹{order.shippingFee !== undefined ? order.shippingFee : 29}</span>
+                <div className="price-row">
+                  <span>Subtotal</span>
+                  <span>₹{order.subtotal || (order.totalAmount - (order.shippingFee || 0))}</span>
                 </div>
-                <div className="total-price-display">
-                  Total: ₹{order.totalAmount}
+
+                <div className="price-row">
+                  <span>Shipping</span>
+                  <span>₹{order.shippingFee !== undefined ? order.shippingFee : 29}</span>
+                </div>
+
+                <div className="price-row total">
+                  <span>Total</span>
+                  <span>₹{order.totalAmount}</span>
                 </div>
               </div>
-
             </div>
           ))
         )}

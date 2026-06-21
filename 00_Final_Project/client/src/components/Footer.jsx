@@ -213,7 +213,7 @@ const Footer = () => {
 
         {/* COPYRIGHT */}
         <div className="footer-bottom">
-          © 2025 Gadget Galaxy | All Rights Reserved
+          © 2026 Gadget Galaxy | All Rights Reserved
         </div>
       </footer>
     </>
