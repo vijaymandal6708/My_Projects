@@ -74,34 +74,18 @@ const userSignup = async (req, res) => {
   }
 };
 
-/* ================= USER LOGIN (JWT) ================= */
+/* ================= USER LOGIN ================= */
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // ===== Validation =====
-    if (!email || !password) {
-      return res.status(400).json({ msg: "Email and password are required" });
-    }
-
-    // ===== Check user exists =====
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ msg: "User not found" });
-    }
 
-    // ===== Compare password =====
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ msg: "Invalid email or password" });
-    }
+    if (!isMatch) return res.status(401).json({ msg: "Invalid credentials" });
 
-    // ===== Generate JWT =====
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     return res.status(200).json({
       msg: "Login successful",
@@ -110,14 +94,11 @@ const userLogin = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
-        city: user.city,
-        pincode: user.pincode,
-        address: user.address,
+        isDemo: user.isDemo, // Include this explicitly
+        phone: user.phone
       },
     });
   } catch (error) {
-    console.error("User login error:", error);
     return res.status(500).json({ msg: "Server error" });
   }
 };

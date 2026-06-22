@@ -30,6 +30,8 @@ import AdminEditProduct from "./admin/ProductEditPage";
 
 /* ===== COMMON ===== */
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./ProtectedRoute";
+import AccessDenied from "./AccessDenied";
 
 function App() {
   return (
@@ -37,8 +39,22 @@ function App() {
       <ScrollToTop />
 
       <Routes>
-        {/* ================= USER WEBSITE ================= */}
-        <Route path="/" element={<Layout />}>
+        {/* AUTH PAGES (Public) */}
+        <Route element={<Layout2 />}>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
+
+        {/* PROTECTED USER WEBSITE (Requires Login) */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="home" element={<Home />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
@@ -53,21 +69,24 @@ function App() {
           <Route path="wishlist" element={<Wishlist />} />
         </Route>
 
-        {/* ================= AUTH (NO HEADER / FOOTER) ================= */}
-        <Route element={<Layout2 />}>
-          <Route index element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Route>
-
-        {/* ================= ADMIN ================= */}
-        <Route path="/admin-dashboard" element={<AdminLayout />}>
+        {/* ADMIN DASHBOARD (Requires Admin Role) */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="add-product" element={<AddProduct />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="edit-product/:id" element={<AdminEditProduct />} />
         </Route>
+
+        {/* UNAUTHORIZED ACCESS ROUTE */}
+        <Route path="/unauthorized" element={<AccessDenied />} />
       </Routes>
     </>
   );

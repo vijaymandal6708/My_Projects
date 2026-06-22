@@ -117,6 +117,12 @@ const Checkout = () => {
 
   /* ================= PAYMENT ================= */
   const handlePay = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.isDemo === true) {
+      toast.error("Demo accounts cannot place orders.");
+      console.log("DEBUG: Blocked: User is a demo user.");
+      return; 
+    }
     if (!address.addressLine || !address.city) {
       toast.warning("Please complete shipping address");
       return;

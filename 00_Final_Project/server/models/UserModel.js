@@ -9,9 +9,13 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     city: { type: String, required: true },
     pincode: { type: String, required: true },
-    address: { type: String, required: true }, // primary address
+    address: { type: String, required: true }, 
 
-    // ✅ alternate addresses array
+    isDemo: { 
+      type: Boolean, 
+      default: false 
+    },
+
     alternateAddresses: {
       type: [
         {

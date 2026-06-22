@@ -5,8 +5,8 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  const [Email, setEmail] = useState("");
+  const [Password, setPassword] = useState("");
   const [usertype, setUserType] = useState("");
   const navigate = useNavigate();
 
@@ -14,11 +14,12 @@ const Login = () => {
     e.preventDefault();
 
     try {
+      localStorage.clear();
       /* ===== ADMIN LOGIN ===== */
       if (usertype === "admin") {
         const res = await axios.post(
           `${import.meta.env.VITE_BACKENDURL}/admin/login`,
-          { adminEmail, adminPassword }
+          { adminEmail: Email, adminPassword: Password },
         );
 
         // 🔑 REQUIRED FOR adminAuth
@@ -27,23 +28,27 @@ const Login = () => {
 
         toast.success(res.data.msg);
         setTimeout(() => navigate("/admin-dashboard"), 1500);
-      }
+      } else if (usertype === "user") {
 
       /* ===== USER LOGIN ===== */
-      if (usertype === "user") {
         const res = await axios.post(
           `${import.meta.env.VITE_BACKENDURL}/user/login`,
           {
-            email: adminEmail,
-            password: adminPassword,
-          }
+            email: Email,
+            password: Password,
+          },
         );
 
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
 
-        toast.success(res.data.msg);
-        setTimeout(() => navigate("/home"), 1500);
+        toast.success(res.data.msg, {
+          autoClose: 2000,
+        });
+
+        setTimeout(() => {
+          navigate("/home");
+        }, 2200);
       }
     } catch (err) {
       toast.error(err.response?.data?.msg || "Login failed");
@@ -286,16 +291,16 @@ const Login = () => {
             <label>Email Address</label>
             <input
               type="email"
-              value={adminEmail}
-              onChange={(e) => setAdminEmail(e.target.value)}
+              value={Email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
 
             <label>Password</label>
             <input
               type="password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
+              value={Password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
 
@@ -312,7 +317,9 @@ const Login = () => {
 
             <button type="submit">Login</button>
 
-            <Link className="end-text" to="/signup">Don't have an account? Signup</Link>
+            <Link className="end-text" to="/signup">
+              Don't have an account? Signup
+            </Link>
           </form>
         </div>
 
