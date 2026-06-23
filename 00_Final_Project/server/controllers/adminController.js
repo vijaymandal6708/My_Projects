@@ -29,51 +29,36 @@ const upload = multer({
   },
 }).array("images", 10);
 
-
 const adminLogin = async (req, res) => {
   try {
-    const { adminEmail, adminPassword } = req.body;
+    const { email, password } = req.body;
+    
+    // Find admin by email
+    const admin = await AdminModel.findOne({ email });
 
-    // 1️⃣ Check admin exists
-    const admin = await AdminModel.findOne({ adminEmail });
-
-    if (!admin) {
-      return res.status(401).json({ msg: "Invalid Admin Email" });
+    // Direct comparison
+    if (!admin || admin.password !== password) {
+      return res.status(401).json({ msg: "Invalid Credentials" });
     }
 
-    // 2️⃣ Plain password check (as you want)
-    if (admin.adminPassword !== adminPassword) {
-      return res.status(401).json({ msg: "Invalid Password" });
-    }
+    const token = jwt.sign({ userId: admin._id, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-    // 3️⃣ Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: admin._id,
-        role: "admin", // 👈 REQUIRED for admin dashboard
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    // 4️⃣ Response
-    res.status(200).json({
-      msg: "Admin login successful",
-      token,
-      admin: {
-        id: admin._id,
-        email: admin.adminEmail,
-        role: "admin",
-      },
+    res.cookie("admintoken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000
     });
 
+    res.status(200).json({
+      user: { id: admin._id, email: admin.email, name: admin.name },
+      msg: "Admin login successful"
+    });
   } catch (error) {
-    console.error("Admin login error:", error);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
-module.exports = adminLogin;
 
 const addProduct = async (req, res) => {
   upload(req, res, async (err) => {

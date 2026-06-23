@@ -1,40 +1,24 @@
-import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { Navigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children, allowedRole }) => {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [roleMatch, setRoleMatch] = useState(false);
+  // Access both the user data and the role from the auth slice
+  const { role, isAuthenticated } = useSelector((state) => state.auth);
+  const location = useLocation();
 
-  useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        // CALL YOUR BACKEND TO VERIFY TOKEN
-        const res = await axios.get("http://localhost:8000/user/fetch-user", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+  // 1. If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-        setAuthorized(true);
-        if (!allowedRole || res.data.role === allowedRole) {
-          setRoleMatch(true);
-        }
-      } catch (err) {
-        setAuthorized(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    verifyUser();
-  }, [allowedRole]);
+  // 2. If a specific role is required, check the role property
+  if (allowedRole && role !== allowedRole) {
+    // Redirect to home or a custom access-denied page
+    return <Navigate to="/" replace />;
+  }
 
-  if (loading) return <div>Loading...</div>;
-  if (!authorized) return <Navigate to="/login" replace />;
-  if (!roleMatch) return <Navigate to="/access-denied" replace />;
-
+  // 3. Render children if authenticated and authorized
   return children;
 };
-
 
 export default ProtectedRoute;

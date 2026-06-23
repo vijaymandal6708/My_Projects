@@ -3,7 +3,7 @@ import Slider from "../components/Slider";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart, addToWishlist, removeFromWishlist, increaseQuantity } from "../cartSlice"; // Added removeFromWishlist if you want to toggle it off
+import { addToCart, addToWishlist, removeFromWishlist, increaseQuantity } from "../Redux-toolkit/cartSlice"; // Added removeFromWishlist if you want to toggle it off
 import { FaRegHeart, FaHeart } from "react-icons/fa6"; // 👇 Imported filled heart icon
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

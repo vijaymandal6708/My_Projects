@@ -5,7 +5,7 @@ import {
   addToCart,
   increaseQuantity,
   removeFromWishlist,
-} from "../cartSlice";
+} from "../Redux-toolkit/cartSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

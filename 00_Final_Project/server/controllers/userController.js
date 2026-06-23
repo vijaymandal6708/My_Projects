@@ -74,7 +74,7 @@ const userSignup = async (req, res) => {
   }
 };
 
-/* ================= USER LOGIN ================= */
+/* ================= USER LOGIN (With HttpOnly Cookie) ================= */
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -85,17 +85,29 @@ const userLogin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ msg: "Invalid credentials" });
 
+    // 1. Create the token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
+    // 2. Set the cookie instead of sending token in JSON
+    res.cookie("token", token, {
+      httpOnly: true, // Prevents client-side JS from reading the token
+      secure: process.env.NODE_ENV === "production", // Only sent over HTTPS in production
+      sameSite: "strict", // Protects against CSRF
+      maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+    });
+
+    // 3. Send only user data back (no token in the JSON body)
     return res.status(200).json({
       msg: "Login successful",
-      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        isDemo: user.isDemo, // Include this explicitly
-        phone: user.phone
+        isDemo: user.isDemo,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        pincode: user.pincode,
       },
     });
   } catch (error) {

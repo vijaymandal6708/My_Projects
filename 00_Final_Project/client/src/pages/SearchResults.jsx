@@ -6,7 +6,7 @@ import {
   addToCart,
   addToWishlist,
   increaseQuantity,
-} from "../cartSlice";
+} from "../Redux-toolkit/cartSlice";
 import { FaRegHeart } from "react-icons/fa6";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

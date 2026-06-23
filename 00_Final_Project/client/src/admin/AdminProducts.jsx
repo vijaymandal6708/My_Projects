@@ -10,21 +10,25 @@ const AdminProducts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const admintoken = localStorage.getItem("admintoken");
-        const res = await axios.get("http://localhost:8000/admin/products", {
-          headers: { Authorization: `Bearer ${admintoken}` },
-        });
-        setProducts(res.data.products);
-      } catch (err) {
-        console.error("Failed to load products", err);
-      } finally {
-        setLoading(false);
+  const fetchProducts = async () => {
+    try {
+      // REMOVE localStorage usage. Use withCredentials: true instead.
+      const res = await axios.get(`${import.meta.env.VITE_BACKENDURL}/admin/products`, {
+        withCredentials: true, // This sends your HttpOnly session cookie
+      });
+      setProducts(res.data.products);
+    } catch (err) {
+      console.error("Failed to load products", err);
+      // Optional: Redirect if unauthorized
+      if (err.response?.status === 401) {
+        navigate("/login");
       }
-    };
-    fetchProducts();
-  }, []);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchProducts();
+}, []);
 
   const handleDelete = async (id) => {
     toast.warn(

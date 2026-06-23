@@ -3,11 +3,14 @@ const app = express();
 require("dotenv").config();
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const AdminRoute = require("./routes/adminRoute");
 const userRoute = require("./routes/userRoute");
 const ProductRoute = require("./routes/productRoute");
 const paymentRoute = require("./routes/paymentRoute");
 const orderRoute = require("./routes/orderRoute");
+
+
 mongoose.connect(process.env.DBCONN).then(()=>{
     console.log("Database Succesfully Connected!");
 })
@@ -15,6 +18,7 @@ mongoose.connect(process.env.DBCONN).then(()=>{
 // Use body-parser middleware for JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors({
   origin: [
     "https://vijay-gadget-galaxy-frontend.onrender.com",

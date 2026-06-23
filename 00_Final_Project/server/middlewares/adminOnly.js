@@ -1,17 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 const adminAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  // 1. Try to get token from Authorization header OR from cookies
+  let token = req.headers.authorization?.startsWith("Bearer ") 
+    ? req.headers.authorization.split(" ")[1] 
+    : req.cookies.admintoken; // Look in the cookie
 
-  if (!authHeader) {
+  if (!token) {
     return res.status(401).json({ msg: "No token provided" });
   }
-
-  if (!authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ msg: "Invalid token format" });
-  }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -20,7 +17,7 @@ const adminAuth = (req, res, next) => {
       return res.status(403).json({ msg: "Access denied" });
     }
 
-    req.admin = decoded; // contains userId & role
+    req.admin = decoded;
     next();
   } catch (error) {
     return res.status(401).json({ msg: "Invalid or expired token" });

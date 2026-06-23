@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart, addToWishlist, increaseQuantity } from "../../cartSlice";
+import { addToCart, addToWishlist, increaseQuantity } from "../../Redux-toolkit/cartSlice";
 import { FaRegHeart } from "react-icons/fa6";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

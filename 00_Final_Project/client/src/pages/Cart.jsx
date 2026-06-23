@@ -3,31 +3,24 @@ import {
   increaseQuantity,
   decreaseQuantity,
   removeFromCart,
-} from "../cartSlice";
+} from "../Redux-toolkit/cartSlice";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cart = useSelector((state) => state.mycart.cart || []);
 
-  // login check
-  const isLoggedIn = localStorage.getItem("user") || localStorage.getItem("token");
-
   // Pricing calculations
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qnty, 0);
   const totalQty = cart.reduce((sum, item) => sum + item.qnty, 0);
-  
-  // 🚚 Shipping fee updated to ₹29
-  const shippingFee = 29; 
+  const shippingFee = 29;
   const total = subtotal + shippingFee;
 
   return (
     <>
-      {/* ===== CART CSS ===== */}
+      {/* ===== YOUR ORIGINAL CART CSS ===== */}
       <style>{`
         * { box-sizing: border-box; font-family: "Inter", system-ui, sans-serif; }
         body { background: #f4f6f8; }
@@ -109,7 +102,7 @@ const Cart = () => {
         .summary-row.total { font-size: 16px; font-weight: 600; margin-top: 18px; }
 
         .checkout-btn {
-          margin-top: 0px;
+          margin-top: 20px;
           width: 30%;
           margin-left: 300px;
           height: 45px;
@@ -127,6 +120,7 @@ const Cart = () => {
         @media (max-width: 600px) {
           .cart-item { flex-direction: column; align-items: flex-start; }
           .item-total { text-align: left; }
+          .checkout-btn { width: 100%; margin-left: 0; }
         }
       `}</style>
 
@@ -135,21 +129,19 @@ const Cart = () => {
         <h2 className="cart-title">My Cart</h2>
 
         {cart.length === 0 ? (
-          <p className="empty-cart" style={{background:"#0c0243",height:"300px",color:"white", padding:"115px",borderRadius:"25px"}}>
-            Your cart is empty<span style={{fontSize:"30px"}}>🛒</span>
+          <p className="empty-cart" style={{background:"#0c0243", height:"300px", color:"white", padding:"115px", borderRadius:"25px"}}>
+            Your cart is empty <span style={{fontSize:"30px"}}>🛒</span>
           </p>
         ) : (
           <>
             {cart.map((item) => (
               <div className="cart-item" key={item.id}>
                 <img src={item.image} alt={item.name} />
-
                 <div className="cart-info">
                   <h4>{item.name}</h4>
                   <p>{item.description}</p>
                   <p className="price">₹{item.price}</p>
                 </div>
-
                 <div className="quantity">
                   <button
                     disabled={item.qnty === 1}
@@ -162,62 +154,38 @@ const Cart = () => {
                     <FiPlus />
                   </button>
                 </div>
-
                 <div className="item-total">₹{item.price * item.qnty}</div>
-
                 <button className="remove-btn" onClick={() => dispatch(removeFromCart(item))}>
                   <FiTrash2 />
                 </button>
               </div>
             ))}
 
-            {/* ===== SUMMARY ===== */}
             <div className="cart-summary">
               <h3>Order Summary</h3>
-
               <div className="summary-row">
                 <span>Total Quantity</span>
                 <span>{totalQty}</span>
               </div>
-
               <div className="summary-row">
                 <span>Subtotal</span>
                 <span>₹{subtotal}</span>
               </div>
-
               <div className="summary-row">
                 <span>Shipping Fee</span>
                 <span>₹{shippingFee}</span>
               </div>
-
               <div className="summary-row total">
                 <span>Total</span>
                 <span>₹{total}</span>
               </div>
-
-              <button
-                className="checkout-btn"
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    toast.warning("Please login to continue checkout", {
-                      position: "top-right",
-                      autoClose: 2000,
-                    });
-
-                    setTimeout(() => { navigate("/login"); }, 2000);
-                    return;
-                  }
-                  navigate("/checkout");
-                }}
-              >
+              <button className="checkout-btn" onClick={() => navigate("/checkout")}>
                 Proceed to Checkout
               </button>
             </div>
           </>
         )}
       </div>
-
-      <ToastContainer />
     </>
   );
 };
