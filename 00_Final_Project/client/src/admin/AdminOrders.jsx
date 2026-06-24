@@ -5,14 +5,14 @@ import { useNavigate } from "react-router-dom";
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState(null); // 1. Added state for toast
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
 
   const fetchOrders = async () => {
     try {
-      const token = localStorage.getItem("admintoken");
-      const res = await axios.get("http://localhost:8000/admin/orders", {
-        headers: { Authorization: `Bearer ${token}` },
+      // Using withCredentials for cookie-based auth
+      const res = await axios.get(`${import.meta.env.VITE_BACKENDURL}/admin/orders`, {
+        withCredentials: true,
       });
       setOrders(res.data.orders);
     } catch (err) {
@@ -28,20 +28,18 @@ const AdminOrders = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const token = localStorage.getItem("admintoken");
       await axios.patch(
-        `http://localhost:8000/admin/update-order-status/${orderId}`,
+        `${import.meta.env.VITE_BACKENDURL}/admin/update-order-status/${orderId}`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { withCredentials: true }
       );
 
       setOrders((prev) =>
         prev.map((o) =>
-          o._id === orderId ? { ...o, orderStatus: newStatus } : o,
-        ),
+          o._id === orderId ? { ...o, orderStatus: newStatus } : o
+        )
       );
 
-      // 2. Trigger toast
       setToast("✅ Order status updated successfully!");
       setTimeout(() => setToast(null), 3000);
     } catch (err) {
@@ -53,7 +51,7 @@ const AdminOrders = () => {
   return (
     <>
       <style>{`
-        /* Existing Styles */
+        /* Original Styles Restored */
         .orders-page { width: 100%; max-width: 1100px; margin: auto; padding: 10px 24px 40px; }
         .admin-page-header { text-align: center; margin-top: 24px; margin-bottom: 36px; }
         .page-title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; }
@@ -73,57 +71,32 @@ const AdminOrders = () => {
         .price-box { width: 220px; font-size: 13px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .price-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: #475569; }
         .total { border-top: 1px solid #e2e8f0; margin-top: 6px; padding-top: 6px; font-weight: 700; color: #0f172a; }
-
-        /* 3. New Toast Styles */
         .toast-popup { position: fixed; top: 150px; right: 20px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; }
       `}</style>
 
       <div className="orders-page">
-        {/* Toast Element */}
         {toast && <div className="toast-popup">{toast}</div>}
 
         <div className="admin-page-header">
           <h2 className="page-title">Manage Orders</h2>
-          <p className="page-subtitle">
-            Track customer checkouts, fulfillment status, and transaction
-            history
-          </p>
+          <p className="page-subtitle">Track customer checkouts, fulfillment status, and transaction history</p>
         </div>
 
         {loading ? (
-          <p style={{ textAlign: "center", color: "#64748b" }}>
-            Loading database order entries...
-          </p>
+          <p style={{ textAlign: "center", color: "#64748b" }}>Loading database order entries...</p>
         ) : orders.length === 0 ? (
           <div className="premium-empty-container">
             <div className="empty-icon-circle">📦</div>
             <h5>No transaction database records found</h5>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#64748b",
-                margin: "0 0 24px 0",
-              }}
-            >
-              The store transaction ledger is currently empty.
-            </p>
-            <button
-              className="empty-dashboard-btn"
-              onClick={() => navigate("/admin-dashboard")}
-            >
-              Return to Metrics
-            </button>
+            <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 24px 0" }}>The store transaction ledger is currently empty.</p>
+            <button className="empty-dashboard-btn" onClick={() => navigate("/admin-dashboard")}>Return to Metrics</button>
           </div>
         ) : (
           orders.map((order) => (
             <div className="order-card" key={order._id}>
               <div className="order-header">
                 <div className="order-id">Order ID: {order._id}</div>
-                <select
-                  value={order.orderStatus}
-                  onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                  className="status-dropdown"
-                >
+                <select value={order.orderStatus} onChange={(e) => updateOrderStatus(order._id, e.target.value)} className="status-dropdown">
                   <option value="Placed">Placed</option>
                   <option value="Packed">Packed</option>
                   <option value="Shipped">Shipped</option>
@@ -132,9 +105,7 @@ const AdminOrders = () => {
                 </select>
               </div>
               <div className="order-meta">
-                <span>
-                  Date: {new Date(order.createdAt).toLocaleDateString()}
-                </span>
+                <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
                 <span>Items: {order.items.length}</span>
               </div>
               <div className="items">
@@ -142,9 +113,7 @@ const AdminOrders = () => {
                   <div className="item-row" key={i}>
                     <div className="item-left">
                       <img src={item.image} alt={item.name} />
-                      <span>
-                        {item.name} × {item.quantity}
-                      </span>
+                      <span>{item.name} × {item.quantity}</span>
                     </div>
                     <strong>₹{item.price * item.quantity}</strong>
                   </div>
@@ -152,18 +121,9 @@ const AdminOrders = () => {
               </div>
               <div className="price-summary">
                 <div className="price-box">
-                  <div className="price-row">
-                    <span>Subtotal</span>
-                    <span>₹{order.subtotal}</span>
-                  </div>
-                  <div className="price-row">
-                    <span>Shipping</span>
-                    <span>₹{order.shippingFee}</span>
-                  </div>
-                  <div className="price-row total">
-                    <span>Total Amount</span>
-                    <span>₹{order.totalAmount}</span>
-                  </div>
+                  <div className="price-row"><span>Subtotal</span><span>₹{order.subtotal}</span></div>
+                  <div className="price-row"><span>Shipping</span><span>₹{order.shippingFee}</span></div>
+                  <div className="price-row total"><span>Total Amount</span><span>₹{order.totalAmount}</span></div>
                 </div>
               </div>
             </div>

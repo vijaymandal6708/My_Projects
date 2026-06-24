@@ -1,19 +1,19 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const OrderConfirmation = () => {
-  const { state } = useLocation();
+  // Consume data from Redux state instead of useLocation
+  const lastOrder = useSelector((state) => state.order.lastOrder) || {};
 
-  // Extract variables safely sent over from Checkout.jsx
   const {
     orderId = "N/A",
     totalAmount = 0,
     items = [],
     shippingAddress = null,
-    orderTime = "N/A", // ✅ Catches the exact timestamp recorded in your database
-  } = state || {};
+    orderTime = "N/A",
+  } = lastOrder;
 
-  // Dynamic totals calculations keeping fees synchronized across your application
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qnty, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.price * (item.qnty || item.quantity), 0);
   const shippingFee = subtotal === 0 ? 0 : 29;
 
   return (
@@ -177,7 +177,6 @@ const OrderConfirmation = () => {
 
         {/* CONTENT */}
         <div className="confirmation-content">
-          {/* LEFT SIDE CONTENT */}
           <div>
             {/* TRANSACTION DETAILS */}
             <div className="card">
@@ -188,15 +187,15 @@ const OrderConfirmation = () => {
               </div>
               <div className="row">
                 <span>Timestamp</span>
-                <span>{orderTime}</span> {/* ✅ Displays the exact timestamp stored in your DB */}
+                <span>{orderTime}</span>
               </div>
             </div>
 
             {/* DYNAMIC PRODUCTS SUMMARY */}
             <div className="card">
               <h3>Items Purchased ({items.length})</h3>
-              {items.map((item) => (
-                <div className="confirm-item-row" key={item.id}>
+              {items.map((item, index) => (
+                <div className="confirm-item-row" key={index}>
                   <div className="confirm-item-details">
                     <img 
                       src={item.image || "/no-image.png"} 
@@ -205,10 +204,10 @@ const OrderConfirmation = () => {
                     />
                     <div>
                       <div style={{ fontWeight: 600 }}>{item.name}</div>
-                      <div style={{ fontSize: "12px", color: "#666" }}>Qty: {item.qnty}</div>
+                      <div style={{ fontSize: "12px", color: "#666" }}>Qty: {item.qnty || item.quantity}</div>
                     </div>
                   </div>
-                  <strong>₹{item.price * item.qnty}</strong>
+                  <strong>₹{item.price * (item.qnty || item.quantity)}</strong>
                 </div>
               ))}
             </div>

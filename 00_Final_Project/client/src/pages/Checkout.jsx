@@ -4,34 +4,27 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { clearCart } from "../Redux-toolkit/cartSlice";
+import { setLastOrder } from "../Redux-toolkit/orderSlice";
 
 const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Accessing state from Redux
   const cartItems = useSelector((state) => state.mycart.cart || []);
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [address, setAddress] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    city: "",
-    pincode: "",
-    addressLine: "",
+    name: "", email: "", phone: "", city: "", pincode: "", addressLine: "",
   });
 
-  /* ================= INITIALIZATION ================= */
   useEffect(() => {
     if (!isAuthenticated || !user) {
       toast.warning("Please login to continue");
       navigate("/login");
       return;
     }
-
     setAddress({
       name: user.name || "",
       email: user.email || "",
@@ -47,10 +40,6 @@ const Checkout = () => {
   const total = subtotal + shipping;
 
   const handlePay = async () => {
-    if (user?.isDemo) {
-      toast.error("Demo accounts cannot place orders.");
-      return;
-    }
     if (!address.addressLine || !address.city) {
       toast.warning("Please complete shipping address");
       return;
@@ -67,51 +56,54 @@ const Checkout = () => {
         order_id: orderRes.data.data.id,
         handler: async (response) => {
           try {
-            await axios.post("http://localhost:8000/api/payment/verify", response);
-            await axios.post("http://localhost:8000/orders/place-order", {
-              items: cartItems,
+            // 1. Verify
+            await axios.post("http://localhost:8000/api/payment/verify", response, { withCredentials: true });
+            
+            // 2. Prepare Payload matching Backend Requirements
+            const orderPayload = {
+              items: cartItems.map(item => ({ 
+                productId: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.qnty, 
+                category: item.category || "Uncategorized" 
+              })),
               shippingAddress: address,
+              subtotal: subtotal,
+              shippingFee: shipping,
               totalAmount: total,
-            });
+              payment: { status: "paid", method: "razorpay" }
+            };
+
+            // 3. Save to DB
+            const dbRes = await axios.post("http://localhost:8000/orders/place-order", orderPayload, { withCredentials: true });
+
+            // 4. Update Redux
+            dispatch(setLastOrder({ ...orderPayload, orderId: dbRes.data.orderId, orderTime: new Date().toLocaleString() }));
+            
             dispatch(clearCart());
             toast.success("Order placed successfully ✅");
-            setTimeout(() => navigate("/order-confirmation"), 2000);
+            setTimeout(() => navigate("/order-confirmation"), 1500);
           } catch (err) {
-            toast.error("Order verification failed ❌");
+            toast.error("Order processing failed ❌");
           }
         },
         theme: { color: "#0c0243" },
       }).open();
     } catch (err) {
-      toast.error("Payment failed ❌");
+      toast.error("Payment initiation failed ❌");
     }
   };
 
   return (
     <>
       <ToastContainer position="top-right" autoClose={2000} />
-
       <style>{`
         * { box-sizing: border-box; font-family: "Inter", system-ui, sans-serif; }
         body { background: #f4f6f8; }
-
-        .checkout-page {
-          min-height: 100vh;
-          max-width: 960px;
-          margin: auto;
-          padding: 40px 20px 80px;
-        }
-
+        .checkout-page { min-height: 100vh; max-width: 960px; margin: auto; padding: 40px 20px 80px; }
         .checkout-title { font-size: 30px; font-weight: 700; margin-bottom: 30px; text-align: center; }
-
-        .section {
-          background: #fff;
-          border-radius: 16px;
-          padding: 28px 35px;
-          margin-bottom: 26px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        }
-
+        .section { background: #fff; border-radius: 16px; padding: 28px 35px; margin-bottom: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
         .section h3 { font-size: 20px; margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-grid input { height: 44px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; }
@@ -119,21 +111,9 @@ const Checkout = () => {
         .form-grid .full { grid-column: span 2; }
         .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .summary-total { font-size: 18px; font-weight: 700; }
-
-        .pay-btn {
-          margin-top: 22px;
-          width: 40%;
-          height: 48px;
-          border-radius: 12px;
-          border: none;
-          background: #0c0243;
-          color: white;
-          font-size: 16px;
-          cursor: pointer;
-          margin-left: 250px;
-        }
-
+        .pay-btn { margin-top: 22px; width: 40%; height: 48px; border-radius: 12px; border: none; background: #0c0243; color: white; font-size: 16px; cursor: pointer; margin-left: 250px; }
         .pay-btn:hover { background: #1b0f6f; }
+        @media (max-width: 768px) { .pay-btn { margin-left: 0; width: 100%; } }
       `}</style>
 
       <div className="checkout-page">

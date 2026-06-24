@@ -51,7 +51,7 @@ const adminLogin = async (req, res) => {
     });
 
     res.status(200).json({
-      user: { id: admin._id, email: admin.email, name: admin.name },
+      user: { id: admin._id, email: admin.email, name: admin.name, isDemo: admin.isDemo },
       msg: "Admin login successful"
     });
   } catch (error) {

@@ -12,18 +12,20 @@ const storage = {
 };
 
 import myReducer from "./cartSlice";
-import authReducer from "./authSlice"; // Ensure you import your new slice
+import authReducer from "./authSlice";
+import orderReducer from "./orderSlice"; // 1. Import your new order slice
 
 const persistConfig = {
   key: 'root',
   storage,
-  // Add 'auth' to the whitelist so the user session survives a page refresh
-  whitelist: ['mycart', 'auth'], 
+  // 2. Add 'order' to the whitelist so order data persists on refresh
+  whitelist: ['mycart', 'auth', 'order'], 
 };
 
 const rootReducer = combineReducers({
   mycart: myReducer,
-  auth: authReducer, // Register the auth reducer here
+  auth: authReducer,
+  order: orderReducer, // 3. Register the order reducer here
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
