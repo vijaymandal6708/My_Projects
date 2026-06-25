@@ -4,18 +4,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { setAuth } from "../Redux-toolkit/authSlice"; 
+import { setAuth } from "../Redux-toolkit/authSlice";
 
 const Login = () => {
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
   const [usertype, setUserType] = useState("");
-  
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // <--- Prevents double-clicking
+    setLoading(true); // <--- Starts the loader
 
     try {
       const endpoint = usertype === "admin" ? "/admin/login" : "/user/login";
@@ -25,23 +28,25 @@ const Login = () => {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKENDURL}${endpoint}`,
         payload,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       // Unified dispatch: stores data under the consistent 'user' key
-      dispatch(setAuth({ 
-        data: res.data.user, 
-        role: usertype 
-      }));
+      dispatch(
+        setAuth({
+          data: res.data.user,
+          role: usertype,
+        }),
+      );
 
       toast.success(res.data.msg);
-      
+
       setTimeout(() => {
         navigate(usertype === "admin" ? "/admin-dashboard" : "/home");
       }, 1500);
-
     } catch (err) {
       toast.error(err.response?.data?.msg || "Login failed");
+      setLoading(false);
     }
   };
 
@@ -56,6 +61,7 @@ const Login = () => {
         @keyframes rotateOrb { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
         @keyframes lightRays { 0%, 100% { opacity: 0.3; transform: rotate(0deg); } 50% { opacity: 0.8; transform: rotate(180deg); } }
         @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(103, 112, 235, 0.5); } 50% { box-shadow: 0 0 25px rgba(5, 65, 176, 0.8); } 100% { box-shadow: 0 0 10px rgba(156,39,176,0.5); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .login-container { display: flex; height: 90vh; margin-top: 35px; font-family: "Poppins", sans-serif; background: #f9f3fa; }
         .login-left { width: 55%; position: relative; background: linear-gradient(270deg, #2c1b9a, #4656c1c2, #687ac8, #5547bc, #2c1b9a); background-size: 600% 600%; animation: waveGradient 10s ease infinite; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); text-align: center; overflow: hidden; }
@@ -74,6 +80,15 @@ const Login = () => {
         .login-form input, .login-form select { width: 100%; padding: 8px 20px; border-radius: 10px; border: 1px solid #d1c4e9; background: #f9f3fa; margin-bottom: 18px; }
         .login-form button { width: 100%; padding: 12px; background: #4324aa; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; animation: pulse 2.5s infinite; margin-bottom: 10px; }
         .end-text { text-decoration: none; font-size: 14px; }
+        .loader {
+  width: 18px; height: 18px; 
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white; 
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  margin-right: 10px;
+}
       `}</style>
 
       <div className="login-container">
@@ -90,24 +105,53 @@ const Login = () => {
           <div className="sparkle s6"></div>
 
           <h1>Power Up Your Tech World</h1>
-          <p>Discover the latest electronic gadgets, smart accessories, and cutting-edge technology—all in one place. Log in to manage products, orders, and updates with ease.</p>
+          <p>
+            Discover the latest electronic gadgets, smart accessories, and
+            cutting-edge technology—all in one place. Log in to manage products,
+            orders, and updates with ease.
+          </p>
         </div>
 
         <div className="login-right">
           <form className="login-form" onSubmit={handleSubmit}>
             <h2>Login to Continue</h2>
             <label>Email Address</label>
-            <input type="email" value={Email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              value={Email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
             <label>Password</label>
-            <input type="password" value={Password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              value={Password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
             <label>Select User Type</label>
-            <select value={usertype} onChange={(e) => setUserType(e.target.value)} required>
+            <select
+              value={usertype}
+              onChange={(e) => setUserType(e.target.value)}
+              required
+            >
               <option value="">Select user type</option>
               <option value="user">User</option>
               <option value="admin">Seller</option>
             </select>
-            <button type="submit">Login</button>
-            <Link className="end-text" to="/signup">Don't have an account? Signup</Link>
+            <button type="submit" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="loader"></span> {/* This is the spinner */}
+                  Logging In...
+                </>
+              ) : (
+                "Login"
+              )}
+            </button>
+            <Link className="end-text" to="/signup">
+              Don't have an account? Signup
+            </Link>
           </form>
         </div>
         <ToastContainer position="top-right" autoClose={2000} />
