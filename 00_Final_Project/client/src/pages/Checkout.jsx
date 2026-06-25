@@ -55,7 +55,7 @@ const Checkout = () => {
     }
 
     try {
-      const orderRes = await axios.post("http://localhost:8000/api/payment/orders", { amount: total * 100 });
+      const orderRes = await axios.post(`${import.meta.env.VITE_BACKENDURL}/api/payment/orders`, { amount: total * 100 });
 
       new window.Razorpay({
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -65,7 +65,7 @@ const Checkout = () => {
         order_id: orderRes.data.data.id,
         handler: async (response) => {
           try {
-            await axios.post("http://localhost:8000/api/payment/verify", response, { withCredentials: true });
+            await axios.post(`${import.meta.env.VITE_BACKENDURL}/api/payment/verify`, response, { withCredentials: true });
             
             const orderPayload = {
               items: cartItems.map(item => ({ 
@@ -83,7 +83,7 @@ const Checkout = () => {
               payment: { status: "paid", method: "razorpay" }
             };
 
-            const dbRes = await axios.post("http://localhost:8000/orders/place-order", orderPayload, { withCredentials: true });
+            const dbRes = await axios.post(`${import.meta.env.VITE_BACKENDURL}/orders/place-order`, orderPayload, { withCredentials: true });
 
             dispatch(setLastOrder({ ...orderPayload, orderId: dbRes.data.orderId, orderTime: new Date().toLocaleString() }));
             
