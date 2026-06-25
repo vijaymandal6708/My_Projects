@@ -182,11 +182,11 @@ const OrderConfirmation = () => {
             <div className="card">
               <h3>Order Metadata</h3>
               <div className="row">
-                <span>Order ID (Server)</span>
+                <span>Order ID</span>
                 <span style={{ color: "#0c0243" }}>{orderId}</span>
               </div>
               <div className="row">
-                <span>Timestamp</span>
+                <span>Time</span>
                 <span>{orderTime}</span>
               </div>
             </div>

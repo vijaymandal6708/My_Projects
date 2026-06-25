@@ -97,6 +97,7 @@ const userLogin = async (req, res) => {
     });
 
     // 3. Send only user data back (no token in the JSON body)
+    console.log(user);
     return res.status(200).json({
       msg: "Login successful",
       user: {
@@ -137,35 +138,35 @@ const addAlternateAddress = async (req, res) => {
   try {
     const { name, phone, city, pincode, addressLine } = req.body;
 
+    // Validate inputs
     if (!name || !phone || !city || !pincode || !addressLine) {
       return res.status(400).json({ msg: "All address fields are required" });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
+    // Atomic update: only modifies the alternateAddresses array
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $push: {
+          alternateAddresses: { name, phone, city, pincode, addressLine }
+        }
+      },
+      { new: true } 
+    );
+
+    if (!updatedUser) {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    user.alternateAddresses.push({
-      name,
-      phone,
-      city,
-      pincode,
-      addressLine,
-    });
-
-    await user.save();
-
     res.status(200).json({
       msg: "Address added successfully",
-      addresses: user.alternateAddresses,
+      addresses: updatedUser.alternateAddresses,
     });
   } catch (err) {
     console.error("Add address error:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
-
 
 /* ================= EXPORT ================= */
 module.exports = {

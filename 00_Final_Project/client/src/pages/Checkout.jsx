@@ -13,6 +13,9 @@ const Checkout = () => {
   const cartItems = useSelector((state) => state.mycart.cart || []);
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  // Assuming isDemo is in the admin slice
+  const isDemo = useSelector((state) => state.auth.user?.isDemo || false);
+  console.log(isDemo);
 
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [address, setAddress] = useState({
@@ -40,6 +43,12 @@ const Checkout = () => {
   const total = subtotal + shipping;
 
   const handlePay = async () => {
+    // Security check: Block order placement if in demo mode
+    if (isDemo) {
+      toast.error("Demo Mode: Order placement is disabled.");
+      return;
+    }
+
     if (!address.addressLine || !address.city) {
       toast.warning("Please complete shipping address");
       return;
@@ -56,17 +65,16 @@ const Checkout = () => {
         order_id: orderRes.data.data.id,
         handler: async (response) => {
           try {
-            // 1. Verify
             await axios.post("http://localhost:8000/api/payment/verify", response, { withCredentials: true });
             
-            // 2. Prepare Payload matching Backend Requirements
             const orderPayload = {
               items: cartItems.map(item => ({ 
                 productId: item.id,
                 name: item.name,
                 price: item.price,
                 quantity: item.qnty, 
-                category: item.category || "Uncategorized" 
+                category: item.category || "Uncategorized",
+                image: item.image
               })),
               shippingAddress: address,
               subtotal: subtotal,
@@ -75,10 +83,8 @@ const Checkout = () => {
               payment: { status: "paid", method: "razorpay" }
             };
 
-            // 3. Save to DB
             const dbRes = await axios.post("http://localhost:8000/orders/place-order", orderPayload, { withCredentials: true });
 
-            // 4. Update Redux
             dispatch(setLastOrder({ ...orderPayload, orderId: dbRes.data.orderId, orderTime: new Date().toLocaleString() }));
             
             dispatch(clearCart());
@@ -106,13 +112,14 @@ const Checkout = () => {
         .section { background: #fff; border-radius: 16px; padding: 28px 35px; margin-bottom: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
         .section h3 { font-size: 20px; margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-grid input { height: 44px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; }
-        .form-grid input:disabled { background: #f1f1f1; }
+        .form-grid input { height: 44px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; width: 100%; }
+        .form-grid input:disabled { background: #f1f1f1; cursor: not-allowed; }
         .form-grid .full { grid-column: span 2; }
         .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .summary-total { font-size: 18px; font-weight: 700; }
-        .pay-btn { margin-top: 22px; width: 40%; height: 48px; border-radius: 12px; border: none; background: #0c0243; color: white; font-size: 16px; cursor: pointer; margin-left: 250px; }
+        .pay-btn { margin-top: 22px; width: 40%; height: 48px; border-radius: 12px; border: none; background: #0c0243; color: white; font-size: 16px; cursor: pointer; margin-left: 250px; transition: 0.3s; }
         .pay-btn:hover { background: #1b0f6f; }
+        .pay-btn:disabled { background: #666; cursor: not-allowed; opacity: 0.6; }
         @media (max-width: 768px) { .pay-btn { margin-left: 0; width: 100%; } }
       `}</style>
 
@@ -143,7 +150,14 @@ const Checkout = () => {
           ))}
           <div className="summary-item"><span>Shipping Fee</span><strong>₹{shipping}</strong></div>
           <div className="summary-item summary-total"><span>Total</span><span>₹{total}</span></div>
-          <button className="pay-btn" onClick={handlePay}>Pay Securely ₹{total}</button>
+          
+          <button 
+            className="pay-btn" 
+            onClick={handlePay} 
+            disabled={isDemo}
+          >
+            {isDemo ? "Demo Mode Active" : `Pay Securely ₹${total}`}
+          </button>
         </div>
       </div>
     </>
