@@ -92,7 +92,7 @@ const userLogin = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true, // Prevents client-side JS from reading the token
       secure: process.env.NODE_ENV === "production", // Only sent over HTTPS in production
-      sameSite: "strict", // Protects against CSRF
+      sameSite: "none", // Protects against CSRF
       maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     });
 
