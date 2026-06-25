@@ -19,7 +19,12 @@ const Checkout = () => {
 
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [address, setAddress] = useState({
-    name: "", email: "", phone: "", city: "", pincode: "", addressLine: "",
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    pincode: "",
+    addressLine: "",
   });
 
   useEffect(() => {
@@ -38,7 +43,10 @@ const Checkout = () => {
     });
   }, [user, isAuthenticated, navigate]);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qnty, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.qnty,
+    0,
+  );
   const shipping = 29;
   const total = subtotal + shipping;
 
@@ -55,7 +63,10 @@ const Checkout = () => {
     }
 
     try {
-      const orderRes = await axios.post(`${import.meta.env.VITE_BACKENDURL}/api/payment/orders`, { amount: total * 100 });
+      const orderRes = await axios.post(
+        `${import.meta.env.VITE_BACKENDURL}/api/payment/orders`,
+        { amount: total * 100 },
+      );
 
       new window.Razorpay({
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -65,33 +76,50 @@ const Checkout = () => {
         order_id: orderRes.data.data.id,
         handler: async (response) => {
           try {
-            await axios.post(`${import.meta.env.VITE_BACKENDURL}/api/payment/verify`, response, { withCredentials: true });
-            
+            await axios.post(
+              `${import.meta.env.VITE_BACKENDURL}/api/payment/verify`,
+              response,
+              { withCredentials: true },
+            );
+
             const orderPayload = {
-              items: cartItems.map(item => ({ 
+              items: cartItems.map((item) => ({
                 productId: item.id,
                 name: item.name,
                 price: item.price,
-                quantity: item.qnty, 
+                quantity: item.qnty,
                 category: item.category || "Uncategorized",
-                image: item.image
+                image: item.image,
               })),
               shippingAddress: address,
               subtotal: subtotal,
               shippingFee: shipping,
               totalAmount: total,
-              payment: { status: "paid", method: "razorpay" }
+              payment: { status: "paid", method: "razorpay" },
             };
 
-            const dbRes = await axios.post(`${import.meta.env.VITE_BACKENDURL}/orders/place-order`, orderPayload, { withCredentials: true });
+            const dbRes = await axios.post(
+              `${import.meta.env.VITE_BACKENDURL}/orders/place-order`,
+              orderPayload,
+              { withCredentials: true },
+            );
 
-            dispatch(setLastOrder({ ...orderPayload, orderId: dbRes.data.orderId, orderTime: new Date().toLocaleString() }));
-            
+            dispatch(
+              setLastOrder({
+                ...orderPayload,
+                orderId: dbRes.data.orderId,
+                orderTime: new Date().toLocaleString(),
+              }),
+            );
+
             dispatch(clearCart());
             toast.success("Order placed successfully ✅");
             setTimeout(() => navigate("/order-confirmation"), 1500);
           } catch (err) {
-            toast.error("Order processing failed ❌");
+            console.error("DEBUG ERROR:", err.response?.data || err.message);
+            const errorMessage =
+              err.response?.data?.message || "Order processing failed ❌";
+            toast.error(errorMessage);
           }
         },
         theme: { color: "#0c0243" },
@@ -128,15 +156,52 @@ const Checkout = () => {
         <div className="section">
           <h3>Shipping Address</h3>
           <label style={{ display: "block", marginBottom: 12 }}>
-            <input type="checkbox" checked={useNewAddress} onChange={() => setUseNewAddress(!useNewAddress)} /> Use a different shipping address
+            <input
+              type="checkbox"
+              checked={useNewAddress}
+              onChange={() => setUseNewAddress(!useNewAddress)}
+            />{" "}
+            Use a different shipping address
           </label>
           <div className="form-grid">
-            <input value={address.name} disabled={!useNewAddress} onChange={(e) => setAddress({ ...address, name: e.target.value })} placeholder="Full Name" />
+            <input
+              value={address.name}
+              disabled={!useNewAddress}
+              onChange={(e) => setAddress({ ...address, name: e.target.value })}
+              placeholder="Full Name"
+            />
             <input value={address.email} disabled placeholder="Email" />
-            <input value={address.phone} disabled={!useNewAddress} onChange={(e) => setAddress({ ...address, phone: e.target.value })} placeholder="Phone" />
-            <input value={address.city} disabled={!useNewAddress} onChange={(e) => setAddress({ ...address, city: e.target.value })} placeholder="City" />
-            <input className="full" value={address.addressLine} disabled={!useNewAddress} onChange={(e) => setAddress({ ...address, addressLine: e.target.value })} placeholder="Address" />
-            <input value={address.pincode} disabled={!useNewAddress} onChange={(e) => setAddress({ ...address, pincode: e.target.value })} placeholder="Pincode" />
+            <input
+              value={address.phone}
+              disabled={!useNewAddress}
+              onChange={(e) =>
+                setAddress({ ...address, phone: e.target.value })
+              }
+              placeholder="Phone"
+            />
+            <input
+              value={address.city}
+              disabled={!useNewAddress}
+              onChange={(e) => setAddress({ ...address, city: e.target.value })}
+              placeholder="City"
+            />
+            <input
+              className="full"
+              value={address.addressLine}
+              disabled={!useNewAddress}
+              onChange={(e) =>
+                setAddress({ ...address, addressLine: e.target.value })
+              }
+              placeholder="Address"
+            />
+            <input
+              value={address.pincode}
+              disabled={!useNewAddress}
+              onChange={(e) =>
+                setAddress({ ...address, pincode: e.target.value })
+              }
+              placeholder="Pincode"
+            />
           </div>
         </div>
 
@@ -144,18 +209,22 @@ const Checkout = () => {
           <h3>Order Summary</h3>
           {cartItems.map((item) => (
             <div key={item.id} className="summary-item">
-              <span>{item.name} × {item.qnty}</span>
+              <span>
+                {item.name} × {item.qnty}
+              </span>
               <strong>₹{item.price * item.qnty}</strong>
             </div>
           ))}
-          <div className="summary-item"><span>Shipping Fee</span><strong>₹{shipping}</strong></div>
-          <div className="summary-item summary-total"><span>Total</span><span>₹{total}</span></div>
-          
-          <button 
-            className="pay-btn" 
-            onClick={handlePay} 
-            disabled={isDemo}
-          >
+          <div className="summary-item">
+            <span>Shipping Fee</span>
+            <strong>₹{shipping}</strong>
+          </div>
+          <div className="summary-item summary-total">
+            <span>Total</span>
+            <span>₹{total}</span>
+          </div>
+
+          <button className="pay-btn" onClick={handlePay} disabled={isDemo}>
             {isDemo ? "Demo Mode Active" : `Pay Securely ₹${total}`}
           </button>
         </div>
