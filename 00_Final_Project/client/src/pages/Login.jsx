@@ -137,7 +137,7 @@ const Login = () => {
             >
               <option value="">Select user type</option>
               <option value="user">User</option>
-              <option value="admin">Seller</option>
+              <option value="admin">Admin</option>
             </select>
             <button type="submit" disabled={loading}>
               {loading ? (
