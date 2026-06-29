@@ -107,7 +107,7 @@ const Login = () => {
           <h1>Power Up Your Tech World</h1>
           <p>
             Discover the latest electronic gadgets, smart accessories, and
-            cutting-edge technology—all in one place. Log in to manage products,
+            cutting-edge technology all in one place. Log in to manage products,
             orders, and updates with ease.
           </p>
         </div>
