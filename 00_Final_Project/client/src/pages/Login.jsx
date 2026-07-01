@@ -81,14 +81,219 @@ const Login = () => {
         .login-form button { width: 100%; padding: 12px; background: #4324aa; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; animation: pulse 2.5s infinite; margin-bottom: 10px; }
         .end-text { text-decoration: none; font-size: 14px; }
         .loader {
-  width: 18px; height: 18px; 
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top: 2px solid white; 
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
-  margin-right: 10px;
-}
+            width: 18px; height: 18px; 
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white; 
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        /* ==========================
+           993px - 1200px (Small Laptop)
+        ========================== */
+
+      @media (min-width: 993px) and (max-width: 1200px) {
+      
+        .login-left{
+          width:52%;
+          clip-path:polygon(0 0,100% 0,90% 100%,0 100%);
+          padding:0 30px;
+        }
+      
+        .login-left h1{
+          font-size:34px;
+        }
+      
+        .login-left p{
+          font-size:16px;
+          max-width:330px;
+        }
+      
+        .login-right{
+          width:48%;
+          margin-left:0;
+          padding:20px;
+        }
+      
+        .login-form{
+          width:100%;
+          max-width:350px;
+          padding:35px 30px;
+        }
+      
+        .login-form input,
+        .login-form select{
+          padding:10px 15px;
+        }
+      
+      }
+      
+      
+      /* ==========================
+         Tablet (769px - 992px)
+      ========================== */
+      
+      @media (max-width:992px){
+      
+        .login-container{
+          flex-direction:column;
+          height:auto;
+          margin-top:20px;
+        }
+      
+        .login-left{
+          width:100%;
+          min-height:320px;
+          clip-path:none;
+          padding:40px 25px;
+        }
+      
+        .login-left h1{
+          font-size:34px;
+        }
+      
+        .login-left p{
+          font-size:17px;
+          max-width:500px;
+        }
+      
+        .login-right{
+          width:100%;
+          margin-left:0;
+          padding:40px 20px;
+        }
+      
+        .login-form{
+          width:100%;
+          max-width:500px;
+          padding:40px;
+        }
+      
+      }
+      
+      
+      /* ==========================
+         Mobile (481px - 768px)
+      ========================== */
+      
+      @media (max-width:768px){
+      
+        .login-container{
+          flex-direction:column;
+          height:auto;
+          margin-top:20px;
+        }
+      
+        .login-left{
+          width:100%;
+          min-height:260px;
+          clip-path:none;
+          padding:30px 20px;
+        }
+      
+        .login-left h1{
+          font-size:32px;
+          line-height:1.3;
+        }
+      
+        .login-left p{
+          font-size:15px;
+          max-width:100%;
+          padding: 0px 50px;
+        }
+      
+        .orb{
+          width:80px;
+          height:80px;
+        }
+      
+        .glow-circle{
+          width:100px;
+          height:100px;
+        }
+      
+        .light-ray{
+          width:250px;
+        }
+      
+        .sparkle{
+          width:6px;
+          height:6px;
+        }
+      
+        .login-right{
+          width: 100%;
+          min-width: 250px;
+          max-width:450px;
+          margin: 0 auto;
+          padding:30px 15px 40px;
+        }
+      
+        .login-form{
+          width:100%;
+          max-width:100%;
+          padding:50px 50px;
+        }
+      
+        .login-form h2{
+          font-size:20px;
+        }
+      
+        .login-form input,
+        .login-form select{
+          padding:12px;
+          font-size:14px;
+        }
+      
+        .login-form button{
+          padding:13px;
+          font-size:15px;
+        }
+      
+      }
+      
+      
+      /* ==========================
+         Small Mobile (0px - 480px)
+      ========================== */
+      
+      @media (max-width:480px){
+      
+        .login-left{
+          min-height:220px;
+          padding:25px 15px;
+        }
+      
+        .login-left h1{
+          font-size:24px;
+        }
+      
+        .login-left p{
+          font-size:14px;
+        }
+      
+        .login-form{
+          padding:25px 15px;
+        }
+      
+        .login-form h2{
+          font-size:18px;
+        }
+      
+        .login-form input,
+        .login-form select,
+        .login-form button{
+          font-size:14px;
+        }
+      
+        .end-text{
+          font-size:13px;
+        }
+      
+      }
+        
       `}</style>
 
       <div className="login-container">
