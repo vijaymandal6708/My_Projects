@@ -311,27 +311,29 @@ const Home = () => {
 @media (max-width:480px){
 
   body{
-    margin-top:105px;
+    margin-top:120px;
   }
 
   .section-header{
-    padding:25px 15px 10px;
-  }
-
-  .section-header h2{
-    font-size:20px;
+    padding:30px 20px 10px;
   }
 
   .section-header p{
     font-size:13px;
   }
 
+  .section-header h2{
+    font-size:20px;
+  }
+
   .products-container{
-    padding:25px 12px;
+    padding:30px 15px;
   }
 
   .product-card{
-    max-width:100%;
+    width:100%;
+    max-width: 300px;
+    padding: 30px;
   }
 
   .product-image{
@@ -357,7 +359,6 @@ const Home = () => {
   }
 
 }
-        }
       `}</style>
 
       {/* ================= UI ================= */}

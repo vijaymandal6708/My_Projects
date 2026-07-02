@@ -108,6 +108,233 @@ const Header = () => {
         .profile { width: 35px; background: #e2e8f0; aspect-ratio: 1 / 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #334155; }
         .suggestions { position: absolute; top: 38px; left: 0; width: 100%; background: white; border-radius: 6px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); max-height: 250px; overflow-y: auto; z-index: 9999; }
         .suggestion-item { padding: 10px 16px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #eee; text-transform: lowercase; color: #333; }
+
+        /* ==========================
+   993px - 1200px (Small Laptop)
+========================== */
+
+@media (min-width:993px) and (max-width:1200px){
+
+  .top-header-content,
+  .bottom-header-content{
+    max-width:100%;
+    padding:0 25px;
+  }
+
+  .left-container{
+    gap:18px;
+    font-size:13px;
+  }
+
+  .logo{
+    width:170px;
+  }
+
+  .logo p{
+    font-size:18px;
+  }
+
+  .search-bar{
+    max-width:450px;
+  }
+
+}
+
+
+/* ==========================
+   Tablet (769px - 992px)
+========================== */
+
+@media (max-width:992px){
+
+  .top-header-content,
+  .bottom-header-content{
+    max-width:100%;
+    padding:0 20px;
+  }
+
+  .left-container{
+    gap:12px;
+    font-size:12px;
+  }
+
+  .logo{
+    width:160px;
+    margin-left:0;
+  }
+
+  .logo p{
+    font-size:18px;
+  }
+
+  .search-bar{
+    max-width:320px;
+  }
+
+  .search-button{
+    width:70px;
+    font-size:13px;
+  }
+
+  .right-container{
+    gap:10px;
+  }
+
+}
+
+/* ==========================
+   Mobile (351px - 768px)
+========================== */
+
+@media (min-width:351px) and (max-width:768px){
+
+  .home-page {
+  width: 100%;
+  padding-top: 105px; /* desktop */
+  }
+
+  .top-header-content{
+    flex-direction:column;
+    justify-content:center;
+    gap:12px;
+    height:auto;
+    padding:12px 15px;
+  }
+
+  .left-container{
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:12px;
+  }
+
+  .logo{
+    width:auto;
+    margin-left:0;
+  }
+
+  .logo p{
+    font-size:18px;
+  }
+
+  .right-container{
+    width:100%;
+    justify-content:center;
+    gap:12px;
+  }
+
+  .bottom-header-content{
+    flex-direction:column;
+    height:auto;
+    gap:12px;
+    padding:15px;
+  }
+
+  .search-bar{
+    width:100%;
+    max-width:100%;
+    height:40px;
+  }
+
+  .search-button{
+    width:70px;
+    font-size:13px;
+  }
+
+  .profile{
+    width:32px;
+    font-size:13px;
+  }
+
+}
+
+/* ==========================
+   Small Mobile (0px - 350px)
+========================== */
+
+@media (max-width:350px){
+  
+   .home-page {
+  width: 100%;
+  padding-top: 55px; /* desktop */
+}
+
+  .top-header-content{
+    flex-direction:column;
+    justify-content:center;
+    gap:8px;
+    height:auto;
+    padding:8px;
+  }
+
+  .left-container{
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:6px;
+    font-size:10px;
+  }
+
+  .logo{
+    width:auto;
+    margin-left:0;
+  }
+
+  .logo p{
+    font-size:15px;
+  }
+
+  .circle{
+    width:14px;
+    height:14px;
+    left:8px;
+  }
+
+  .right-container{
+    width:100%;
+    justify-content:center;
+    gap:8px;
+  }
+
+  .orders-container,
+  .wishlist-container,
+  .cart-container,
+  .admin-action-icon{
+    width:30px;
+    height:30px;
+    font-size:17px;
+  }
+
+  .bottom-header-content{
+    flex-direction:column;
+    height:auto;
+    gap:10px;
+    padding:10px 8px;
+  }
+
+  .search-bar{
+    width:100%;
+    max-width:100%;
+    height:36px;
+  }
+
+  .search-bar input{
+    font-size:12px;
+    padding:5px 8px;
+  }
+
+  .search-button{
+    width:60px;
+    font-size:11px;
+  }
+
+  .profile{
+    width:28px;
+    font-size:11px;
+  }
+
+}
       `}</style>
 
       <div className="header-container">
